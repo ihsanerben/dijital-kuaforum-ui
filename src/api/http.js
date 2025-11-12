@@ -1,28 +1,30 @@
-import axios from 'axios';
-// Artık getAuthData ve clearAuthData kullanılmıyor, silinebilir.
+import axios from "axios";
 
-// Backend Adresinizi Buraya Yazın
-const API_BASE_URL = 'http://localhost:8080/api'; 
+const API_BASE_URL = "http://localhost:8080/api";
 
 const http = axios.create({
   baseURL: API_BASE_URL,
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
-// !!! DİKKAT: Artık Basic Auth Interceptor'ı Yok. !!!
-// Yetkilendirme (Username/Password) bilgisi her isteğe manuel olarak eklenecek.
-
+// http.js (Örnek doğru yapı)
+// http.js - response interceptor (error)
 http.interceptors.response.use(
-    (response) => response,
-    (error) => {
+    (response) => { // Başarılı yanıt
+        return response;
+    },
+    (error) => { // Hata yanıtı
         if (error.response && error.response.status === 401) {
-            // 401 hatası gelirse, Router kurulduktan sonra buraya yönlendirme eklenecek.
-            console.error("Yetkisiz İstek (401). Oturum sonlandırıldı.");
-            // Eğer isterseniz, burada yönlendirme yapılabilir: window.location.href = '/login';
+            // Eğer 401 ise, oturum sonlandırma mantığını buraya ekleyin
+            // Örneğin: storage.
+            // Ancak şimdilik sadece hatayı fırlatıyoruz.
+            
         }
-        return Promise.reject(error);
+
+        // Hata durumunda Promise'ı reddet ve hata nesnesini bir sonraki catch bloğuna ilet
+        return Promise.reject(error); 
     }
 );
 
