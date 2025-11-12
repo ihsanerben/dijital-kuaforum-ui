@@ -1,4 +1,4 @@
-// src/components/PublicLayout.jsx
+// src/components/PublicLayout.jsx GÜNCELLENMİŞ KOD
 
 import React from 'react';
 import { Layout, Menu, theme } from 'antd';
@@ -6,13 +6,12 @@ import { useNavigate, useLocation } from 'react-router-dom';
 
 const { Header, Content, Footer } = Layout;
 
-// Public sayfalar için menü öğeleri
 const publicMenuItems = [
-  { key: '/', label: 'Anasayfa' }, // Anasayfa'yı ekledik
+  { key: '/', label: 'Anasayfa' },
   { key: '/prices', label: 'Fiyat Listesi' },
   { key: '/services', label: 'Hizmetlerimiz' },
   { key: '/about', label: 'Hakkımızda' },
-  { key: '/login', label: 'Kuaför Girişi' }, // Giriş sayfasını da buraya ekleyelim
+  { key: '/login', label: 'Kuaför Girişi' },
 ];
 
 const PublicLayout = ({ children }) => {
@@ -34,7 +33,17 @@ const PublicLayout = ({ children }) => {
     <Layout style={{ minHeight: '100vh' }}>
       {/* Üst Başlık (Header) */}
       <Header style={{ display: 'flex', alignItems: 'center', background: '#001529' }}>
-        <div style={{ color: 'white', fontSize: '18px', fontWeight: 'bold', marginRight: '40px' }}>
+        {/* BURASI GÜNCELLENDİ: Tıklanabilir hale geldi */}
+        <div 
+            style={{ 
+                color: 'white', 
+                fontSize: '18px', 
+                fontWeight: 'bold', 
+                marginRight: '40px', 
+                cursor: 'pointer' // Tıklanabilir olduğunu göstermek için
+            }}
+            onClick={() => navigate('/')} // Anasayfaya yönlendirme
+        >
             Kuaförüm
         </div>
         <Menu
