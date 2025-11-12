@@ -9,11 +9,13 @@ import CustomerCRUDPage from "./pages/CustomerCRUDPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 // YENİ/GÜNCELLENMİŞ SAYFA IMPORTLARI
-import HomePage from './pages/HomePage';       // YENİ ANASAYFA
+import HomePage from './pages/HomePage';
 import AboutPage from './pages/AboutPage';
 import PriceListPage from './pages/PriceListPage';
 import ServicesPage from './pages/ServicesPage';
-import StatisticsPage from './pages/StatisticsPage';
+import StatisticsPage from "./pages/StatisticsPage";
+// YENİ: İLETİŞİM SAYFASI
+import ContactPage from './pages/ContactPage'; 
 
 
 function App() {
@@ -27,6 +29,7 @@ function App() {
         <Route path="/about" element={<AboutPage />} />
         <Route path="/prices" element={<PriceListPage />} />
         <Route path="/services" element={<ServicesPage />} />
+        <Route path="/contact" element={<ContactPage />} /> {/* YENİ ROTA */}
 
         {/* --- Korumalı Rotalar (Giriş Yapılması Gerekir) --- */}
         
@@ -45,8 +48,6 @@ function App() {
         } />
         
         {/* Giriş yapıldıktan sonra varsayılan olarak /customers'a yönlendir */}
-        {/* Artık '/' anasayfa olduğu için bu satırı değiştirebiliriz
-        <Route path="/" element={<Navigate to="/customers" replace />} /> */}
         
       </Routes>
     </BrowserRouter>
