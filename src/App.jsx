@@ -19,6 +19,7 @@ import StatisticsPage from "./pages/StatisticsPage";
 
 import AppointmentPage from "./pages/AppointmentPage"; // YENİ
 import PublicCalendarPage from "./pages/PublicCalendarPage"; // YENİ
+import AdminCalendarPage from "./pages/AdminCalendarPage"; // YENİ
 
 import ContactPage from "./pages/ContactPage";
 
@@ -41,8 +42,6 @@ function App() {
         <Route path="/calendar" element={<PublicCalendarPage />} />
         {/* Randevu Oluşturma Rotası (Gereksinim 3/4) */}
         <Route path="/appointment" element={<AppointmentPage />} />
-
-        
         {/* --- Korumalı Rotalar (Giriş Yapılması Gerekir) --- */}
         {/* Müşteri Yönetim Sayfası */}
         <Route
@@ -54,10 +53,10 @@ function App() {
           }
         />
         <Route
-          path="/customers"
+          path="/adminCalendar"
           element={
             <ProtectedRoute>
-              <CustomerCRUDPage />
+              <AdminCalendarPage />
             </ProtectedRoute>
           }
         />

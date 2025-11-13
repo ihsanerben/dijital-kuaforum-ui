@@ -4,3 +4,15 @@ body, html {
     width: 100%;
     height: 100%;
 }
+
+.randevu-al-btn {
+    opacity: 0.5;
+    /* transition ekleyerek yumuşak geçiş sağlar */
+    transition: opacity 0.3s, background-color 0.3s; 
+}
+
+.randevu-al-btn:hover {
+    opacity: 1.0 !important;
+    background-color: #52c41a !important; /* Ant Design Success rengi veya saf yeşil */
+    border-color: #52c41a !important;
+}
