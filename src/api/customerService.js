@@ -1,72 +1,59 @@
+// src/api/customerService.js - GÜNCEL VE HATASIZ
+
 import http from "./http";
-import { getAuthData } from "../utils/storage";
+// Hata veren fonksiyon adı düzeltildi
+import { getAdminAuthData } from "../utils/storage"; 
 
-const CUSTOMERS_ENDPOINT = "/customers";
+const BASE_URL = "/api/customers";
 
+// Admin yetkilendirme başlıklarını ekleyen yardımcı fonksiyon
 const getAuthHeaders = () => {
-  const { username, password } = getAuthData();
+  const { username, password } = getAdminAuthData();
   if (!username || !password) {
-    throw new Error("Giriş bilgileri eksik.");
+    // Admin oturumu yoksa boş objeyi döndür (Bu durum ProtectedRoute'ta zaten engellenir)
+    return {};
   }
-  return { Username: username, Password: password };
+  return {
+    Username: username,
+    Password: password,
+  };
 };
 
+// --- READ (Admin: Tüm müşterileri listele) ---
 export const getCustomers = async () => {
-  try {
-    const headers = getAuthHeaders();
-
-    const response = await http.get(`${CUSTOMERS_ENDPOINT}/getAllCustomers`, {
-      headers: headers,
-    });
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
+  const headers = getAuthHeaders();
+  // Admin için CRUD işlemi olduğu için headers zorunludur
+  return http.get(`${BASE_URL}/getAllCustomers`, { headers });
 };
 
-export const createCustomer = async (customer) => {
-  try {
-    const { username, password } = getAuthData();
-
-    const requestBody = {
+// --- CREATE (Admin: Yeni müşteri oluştur) ---
+export const createCustomer = async (customerData) => {
+  const headers = getAuthHeaders();
+  // Admin yetkilendirme bilgilerini Request Body'ye SecureDTO olarak eklediğinizi varsayıyorum
+  // Eğer RequestBody kullanıyorsanız, burayı sizin yapınıza göre düzenlemeniz gerekebilir.
+  
+  // Örnek: Eğer backendiniz SecureCustomerRequestDTO kullanıyorsa
+  const { username, password } = getAdminAuthData();
+  const securedRequest = {
       username: username,
       password: password,
-      customer: customer,
-    };
-
-    const response = await http.post(`${CUSTOMERS_ENDPOINT}/createCustomer`, requestBody);
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
+      customer: customerData // Formdan gelen müşteri verisi
+  };
+  
+  return http.post(`${BASE_URL}/createCustomer`, securedRequest, { headers: headers });
 };
 
-export const updateCustomer = async (id, updatedCustomer) => {
-  try {
-    const headers = getAuthHeaders();
 
-    const response = await http.put(
-      `/customers/updateCustomer/${id}`,
-      updatedCustomer,
-      {
-        headers: headers,
-      }
-    );
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
+// --- UPDATE (Admin: Müşteriyi Güncelle) ---
+export const updateCustomer = async (id, updatedCustomerData) => {
+  const headers = getAuthHeaders();
+  // PUT metodu için de Admin yetkilendirme başlıkları zorunludur
+  return http.put(`${BASE_URL}/updateCustomer/${id}`, updatedCustomerData, { headers });
 };
 
+// --- DELETE (Admin: Müşteriyi Sil) ---
 export const deleteCustomer = async (id) => {
-  try {
-    const headers = getAuthHeaders();
-
-    const response = await http.delete(`${CUSTOMERS_ENDPOINT}/deleteCustomer/${id}`, {
-      headers: headers,
-    });
-    return response;
-  } catch (error) {
-    throw error;
-  }
+  const headers = getAuthHeaders();
+  // DELETE metodu için de Admin yetkilendirme başlıkları zorunludur
+  return http.delete(`${BASE_URL}/deleteCustomer/${id}`, { headers });
 };

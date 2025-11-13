@@ -1,14 +1,17 @@
-// src/components/PublicLayout.jsx - SON FİNAL VE KESİN KOD
+// src/components/PublicLayout.jsx - SON HALİ
 
 import React from 'react';
 import { Layout, Menu, theme, Button, Row, Col, Typography, Divider } from 'antd';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { UserOutlined, CalendarOutlined, FacebookFilled, InstagramFilled, TwitterSquareFilled, YoutubeFilled, ArrowRightOutlined, PhoneOutlined, MailOutlined, HomeOutlined } from '@ant-design/icons';
+import { UserOutlined, CalendarOutlined, LogoutOutlined, FacebookFilled, InstagramFilled, TwitterSquareFilled, YoutubeFilled, ArrowRightOutlined, PhoneOutlined, MailOutlined, HomeOutlined } from '@ant-design/icons';
+// YENİ: Müşteri oturum kontrolü için doğru fonksiyon import edildi
+import { isCustomerLoggedIn } from '../utils/storage'; 
+import { logoutCustomer } from '../api/customerAuthService'; // Müşteri Logout fonksiyonu
 
 const { Header, Content, Footer } = Layout;
 const { Title, Paragraph, Link } = Typography;
 
-// YENİ SIRALAMAYA GÖRE GÜNCELLENMİŞ MENÜ ÖĞELERİ
+// Menü öğeleri
 const publicMenuItems = [
   { key: '/calendar', icon: <CalendarOutlined />, label: 'Haftalık Randevu Takvimi' },
   { key: '/', label: 'Anasayfa' },
@@ -21,7 +24,8 @@ const publicMenuItems = [
 const PublicLayout = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  
+  const loggedIn = isCustomerLoggedIn(); // Müşteri oturum durumu kontrolü
+
   const {
     token: { colorBgContainer },
   } = theme.useToken();
@@ -32,6 +36,12 @@ const PublicLayout = ({ children }) => {
   
   const handleUserAuthClick = () => {
     navigate('/userAuth');
+  };
+  
+  // Çıkış yapma işlevi
+  const handleLogoutClick = () => {
+    logoutCustomer(); // Müşteri verisi Local Storage'dan temizlenir
+    navigate('/', { replace: true }); // Anasayfaya yönlendir
   };
   
   const selectedKey = publicMenuItems.find(item => location.pathname === item.key)?.key || '/';
@@ -49,7 +59,7 @@ const PublicLayout = ({ children }) => {
           width: '100%',
           top: 0 
       }}>
-        {/* Sol Taraftaki Başlık (LOGO ADI GÜNCELLENDİ) */}
+        {/* Sol Taraftaki Başlık (Logo) */}
         <div 
             style={{ 
                 color: 'white', 
@@ -73,15 +83,26 @@ const PublicLayout = ({ children }) => {
           style={{ borderBottom: 'none' }} 
         />
         
-        {/* KULLANICI GİRİŞ/KAYIT BUTONU */}
-        <Button 
-          type="primary" 
-          onClick={handleUserAuthClick} 
-          icon={<UserOutlined />}
-          style={{ marginLeft: '20px' }} 
-        >
-          Giriş Yap / Üye Ol
-        </Button>
+        {/* DURUMA GÖRE BUTON GÖSTERİMİ */}
+        {loggedIn ? (
+            <Button 
+                type="primary" 
+                onClick={handleLogoutClick} 
+                icon={<LogoutOutlined />}
+                style={{ marginLeft: '10px' }} 
+            >
+                Çıkış Yap
+            </Button>
+        ) : (
+            <Button 
+                type="primary" 
+                onClick={handleUserAuthClick} 
+                icon={<UserOutlined />}
+                style={{ marginLeft: '10px' }} 
+            >
+                Giriş Yap / Üye Ol
+            </Button>
+        )}
       </Header>
       
       {/* Content */}
@@ -95,7 +116,7 @@ const PublicLayout = ({ children }) => {
         {children}
       </Content>
       
-      {/* FOOTER KISMI - Bilgilerinizin doğru olduğunu varsayarak aynı kaldı. */}
+      {/* FOOTER KISMI */}
       <Footer style={{ backgroundColor: '#f0f2f5', padding: '40px 50px 10px' }}>
         <Row gutter={[32, 32]} justify="center"> 
           
