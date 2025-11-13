@@ -1,75 +1,62 @@
-// src/App.jsx
+// src/App.jsx - SABİT SİDEBAR İÇİN YAPI
 
-import React from "react";
+import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
-// Sayfa Importları
-// LoginPage yerine AdminLoginPage import edildi
-import AdminLoginPage from "./pages/AdminLoginPage";
-import UserAuthPage from "./pages/UserAuthPage"; // YENİ: Müşteri Giriş/Kayıt Sayfası
+// Tüm importlar
+import AdminLoginPage from "./pages/AdminLoginPage"; 
+import UserAuthPage from "./pages/UserAuthPage"; 
 import CustomerCRUDPage from "./pages/CustomerCRUDPage";
+import AdminCalendarPage from './pages/AdminCalendarPage';
+import StatisticsPage from './pages/StatisticsPage'; // İstatistik sayfası
 import ProtectedRoute from "./components/ProtectedRoute";
+import DashboardLayout from './components/DashboardLayout'; // Layout
+import HomePage from './pages/HomePage';
+import AboutPage from './pages/AboutPage';
+import PriceListPage from './pages/PriceListPage';
+import ServicesPage from './pages/ServicesPage';
+import ContactPage from './pages/ContactPage';
+import AppointmentPage from './pages/AppointmentPage';
+import PublicCalendarPage from './pages/PublicCalendarPage';
 
-// YENİ/GÜNCELLENMİŞ SAYFA IMPORTLARI
-import HomePage from "./pages/HomePage";
-import AboutPage from "./pages/AboutPage";
-import PriceListPage from "./pages/PriceListPage";
-import ServicesPage from "./pages/ServicesPage";
-import StatisticsPage from "./pages/StatisticsPage";
-
-import AppointmentPage from "./pages/AppointmentPage"; // YENİ
-import PublicCalendarPage from "./pages/PublicCalendarPage"; // YENİ
-import AdminCalendarPage from "./pages/AdminCalendarPage"; // YENİ
-
-import ContactPage from "./pages/ContactPage";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* --- Public (Açık) Rotalar --- */}
+        
+        {/* --- Public Rotalar (Aynı Kalır) --- */}
         <Route path="/" element={<HomePage />} />
-        <Route path="/login" element={<HomePage />} />
+        <Route path="/userAuth" element={<UserAuthPage />} /> 
+        <Route path="/calendar" element={<PublicCalendarPage />} /> 
+        <Route path="/appointment" element={<AppointmentPage />} /> 
+        <Route path="/adminGiris" element={<AdminLoginPage />} /> 
         <Route path="/about" element={<AboutPage />} />
         <Route path="/prices" element={<PriceListPage />} />
         <Route path="/services" element={<ServicesPage />} />
-        <Route path="/contact" element={<ContactPage />} /> {/* YENİ ROTA */}
-        {/* YENİ: Müşteri Giriş/Kayıt Sayfası */}
-        <Route path="/userAuth" element={<UserAuthPage />} />
-        {/* YENİ: Kuaför Girişi (Gizli Rota) */}
-        <Route path="/adminGiris" element={<AdminLoginPage />} />
-        {/* Haftalık Takvim (Gereksinim 3) */}
-        <Route path="/calendar" element={<PublicCalendarPage />} />
-        {/* Randevu Oluşturma Rotası (Gereksinim 3/4) */}
-        <Route path="/appointment" element={<AppointmentPage />} />
-        {/* --- Korumalı Rotalar (Giriş Yapılması Gerekir) --- */}
-        {/* Müşteri Yönetim Sayfası */}
-        <Route
-          path="/customers"
-          element={
-            <ProtectedRoute>
-              <CustomerCRUDPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/adminCalendar"
-          element={
-            <ProtectedRoute>
-              <AdminCalendarPage />
-            </ProtectedRoute>
-          }
-        />
-        {/* Raporlar ve İstatistik */}
-        <Route
-          path="/statistics"
-          element={
-            <ProtectedRoute>
-              <StatisticsPage />
-            </ProtectedRoute>
-          }
-        />
-        {/* Giriş yapıldıktan sonra varsayılan olarak /customers'a yönlendir */}
+        <Route path="/contact" element={<ContactPage />} />
+
+
+      {/* --- KORUMALI ROTALAR GRUBU --- */}
+        
+        {/* 1. Korumayı (Auth Check) Sağla */}
+        <Route element={<ProtectedRoute />}>
+          
+          {/* 2. Layout'u Sabitle (Sabit Sidebar) */}
+          <Route element={<DashboardLayout />}> 
+            
+            {/* 3. Alt Sayfaları Yükle (İçerik) */}
+            
+            <Route path="/admin" element={<Navigate to="/adminCalendar" replace />} />
+            <Route path="/adminCalendar" element={<AdminCalendarPage />} />
+            <Route path="/customers" element={<CustomerCRUDPage />} />
+            <Route path="/statistics" element={<StatisticsPage />} /> 
+
+          </Route>
+        </Route>
+
+        {/* ... (Diğer Rotalar) ... */}
+        
       </Routes>
     </BrowserRouter>
   );

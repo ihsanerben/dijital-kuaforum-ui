@@ -1,9 +1,9 @@
-// src/components/DashboardLayout.jsx (YENİ DOSYA)
+// src/components/DashboardLayout.jsx - SABİT SİDEBAR & OUTLET KULLANIMI
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Layout, Menu, Button, theme, Typography, message } from 'antd';
-import { UserOutlined, CalendarOutlined, PieChartOutlined, LogoutOutlined, TeamOutlined } from '@ant-design/icons';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { TeamOutlined, CalendarOutlined, PieChartOutlined, LogoutOutlined } from '@ant-design/icons';
+import { useNavigate, useLocation, Outlet } from 'react-router-dom'; // Outlet import edildi
 import { clearAdminAuthData } from '../utils/storage'; 
 
 const { Header, Content, Sider } = Layout;
@@ -28,8 +28,8 @@ const menuItems = [
   },
 ];
 
-const DashboardLayout = ({ children }) => {
-  const [collapsed, setCollapsed] = useState(false);
+// children prop'u kaldırıldı
+const DashboardLayout = () => { 
   const navigate = useNavigate();
   const location = useLocation(); 
   
@@ -42,32 +42,35 @@ const DashboardLayout = ({ children }) => {
   };
   
   const handleLogout = () => {
-      clearAdminAuthData(); // Admin (Kuaför) Local Storage verisini temizle
+      clearAdminAuthData(); 
       message.success('Başarıyla çıkış yapıldı.');
-      navigate('/adminGiris', { replace: true }); // Gizli Admin Giriş sayfasına yönlendir
+      navigate('/adminGiris', { replace: true }); 
   };
 
-  // Geçerli yolu kullanarak menüdeki aktif öğeyi belirle
+  // Menüde aktif olan öğeyi belirler
   const selectedKey = menuItems.find(item => location.pathname.startsWith(item.key))?.key || '/adminCalendar';
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
-      {/* Sol Kenar Çubuğu (Sidebar) */}
+      {/* Sol Kenar Çubuğu (SABİT SİDEBAR) */}
       <Sider 
-        collapsible 
-        collapsed={collapsed} 
-        onCollapse={(value) => setCollapsed(value)}
-        breakpoint="lg"
-        collapsedWidth="80"
+        width={200} // Sabit genişlik
+        style={{
+            overflow: 'auto',
+            height: '100vh',
+            position: 'fixed', 
+            left: 0,
+            top: 0,
+            bottom: 0,
+        }}
       >
-        <div className="demo-logo-vertical" style={{ height: 32, margin: 16, background: 'rgba(255, 255, 255, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Title level={5} style={{ color: 'white', margin: 0 }}>
-                {collapsed ? 'Rİ' : 'Rıdvan Cengiz'}
+        <div style={{ height: 32, margin: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Title level={4} style={{ color: 'white', margin: 0 }}>
+                RD Yönetim
             </Title>
         </div>
         <Menu 
           theme="dark" 
-          defaultSelectedKeys={[selectedKey]} 
           selectedKeys={[selectedKey]}
           mode="inline" 
           items={menuItems} 
@@ -75,7 +78,10 @@ const DashboardLayout = ({ children }) => {
         />
       </Sider>
       
-      <Layout>
+      <Layout 
+          // İçerik, sidebar genişliği kadar sağa kaydırıldı
+          style={{ marginLeft: 200 }}
+      >
         {/* Başlık Çubuğu (Header) */}
         <Header style={{ padding: 0, background: colorBgContainer, display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
             <Button
@@ -100,7 +106,8 @@ const DashboardLayout = ({ children }) => {
             borderRadius: borderRadiusLG,
           }}
         >
-          {children}
+          {/* İç rotaların içeriği burada gösterilir */}
+          <Outlet /> 
         </Content>
       </Layout>
     </Layout>

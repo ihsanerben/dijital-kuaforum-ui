@@ -1,146 +1,108 @@
-import React, { useState, useEffect,  useCallback } from "react";
-import {
-  Layout,
-  Typography,
-  Button,
-  Table,
-  message,
-  Space,
-  Popconfirm,
-  Modal,
-  Form,
-  Input,
-} from "antd";
-import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
-import { logout } from "../api/authService";
+// src/pages/CustomerCRUDPage.jsx - TEMİZLENMİŞ HAL
 
-import {
-  getCustomers,
-  createCustomer,
-  updateCustomer,
-  deleteCustomer,
-} from "../api/customerService";
+import React, { useState, useEffect, useCallback } from 'react';
+import { Typography, Table, Button, message, Popconfirm, Modal, Form, Input, Row, Space } from "antd";
+import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
+// DashboardLayout importu SİLİNDİ
+import { getCustomers, createCustomer, updateCustomer, deleteCustomer } from "../api/customerService";
 import { useNavigate } from "react-router-dom";
 
-const { Header, Content } = Layout;
-const { Title } = Typography;
+const { Title, Content } = Typography; // Content artık Typography'den geliyor
 
 const CustomerCRUDPage = () => {
   const navigate = useNavigate();
-
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [editingCustomer, setEditingCustomer] = useState(null); // Düzenlenen müşteri (null ise ekleme)
-  const [form] = Form.useForm(); // Ant Design Form yönetimi için
+  const [editingCustomer, setEditingCustomer] = useState(null); // Düzenlenen müşteri (null = ekleme)
+  const [form] = Form.useForm();
 
-  // Müşteri verilerini çekme fonksiyonu
+  // Müşterileri Backend'den Çekme Fonksiyonu
   const fetchCustomers = useCallback(async () => {
     setLoading(true);
     try {
-      const { data } = await getCustomers();
-      
-      // HATA DÜZELTME: Gelen verinin dizi olup olmadığını kontrol et
-      if (Array.isArray(data)) { 
-        setCustomers(data);
-      } else if (data === null || data === undefined || (typeof data === 'object' && Object.keys(data).length === 0)) {
-        // Eğer boş bir nesne veya null gelirse, listeyi boş array olarak ayarla
-        setCustomers([]);
+      const response = await getCustomers();
+      if (Array.isArray(response.data)) {
+        setCustomers(response.data);
       } else {
-        // Eğer beklenmeyen bir format (dizi değil, ama veri var) gelirse hata fırlat
-        console.error("Beklenmeyen müşteri listesi formatı:", data);
-        message.error("Müşteri listesi beklenmeyen formatta geldi.");
         setCustomers([]);
       }
     } catch (error) {
-      console.error(error);
+      console.error("Müşteri listesi çekilirken hata oluştu:", error);
       message.error("Müşteri listesi çekilirken hata oluştu. Lütfen girişi kontrol edin.");
     } finally {
       setLoading(false);
     }
-  }, [setCustomers, setLoading, message]); // message ve diğer dependency'ler (useState)
-  
-  // YENİ EKLENECEK KISIM: Component ilk yüklendiğinde çalıştır
+  }, []);
+
   useEffect(() => {
     fetchCustomers();
-  }, [fetchCustomers]); // fetchCustomers bir dependency olarak eklenmelidir.
+  }, [fetchCustomers]);
 
-  
-  function handleLogout() {
-    logout();
-    message.success("Başarıyla çıkış yapıldı.");
-    navigate("/login");
-  }
+  // Yeni/Düzenleme Modal'ını Açma
+  const handleEdit = (customer) => {
+    setEditingCustomer(customer);
+    if (customer) {
+      form.setFieldsValue(customer);
+    } else {
+      form.resetFields();
+    }
+    setIsModalVisible(true);
+  };
 
+  // Form Gönderimi (Ekleme/Düzenleme)
   const onFinish = async (values) => {
-    setLoading(true);
     try {
       if (editingCustomer) {
+        // Düzenleme
         await updateCustomer(editingCustomer.id, values);
         message.success("Müşteri başarıyla güncellendi.");
       } else {
+        // Ekleme
+        // Not: Backend'iniz DTO beklediği için bu kısım DTO yapısına göre düzenlenmelidir.
+        // Bu basitlik için DTO'yu serviste sarmaladığımızı varsayıyoruz.
         await createCustomer(values);
-        message.success("Yeni müşteri başarıyla eklendi.");
+        message.success("Müşteri başarıyla eklendi.");
       }
       setIsModalVisible(false);
       fetchCustomers();
-      form.resetFields();
     } catch (error) {
-      let errorMessage = "İşlem sırasında beklenmeyen bir hata oluştu.";
-      if (
-        error.response &&
-        error.response.data &&
-        error.response.data.message
-      ) {
-        errorMessage = error.response.data.message;
-      } else if (error.message) {
-        errorMessage = error.message;
-      }
-      message.error(errorMessage);
-    } finally {
-      setLoading(false);
+      message.error(`İşlem başarısız: ${error.response?.data || 'Sunucu hatası'}`);
     }
   };
 
+  // Müşteri Silme
   const handleDelete = async (id) => {
     try {
       await deleteCustomer(id);
       message.success("Müşteri başarıyla silindi.");
       fetchCustomers();
     } catch (error) {
-      message.error("Müşteri silinirken hata oluştu.");
-      console.error("Delete Customer Error:", error);
+      message.error(`Silme başarısız: ${error.response?.data || 'Sunucu hatası'}`);
     }
   };
 
-  const showModal = (customer = null) => {
-    setEditingCustomer(customer);
-    setIsModalVisible(true);
-    form.setFieldsValue(customer || { name: "", phone: "", email: "" });
-  };
-
   const columns = [
-    // NOT: dataIndex alanları, Spring Boot'taki Customer modelinizle birebir aynı olmalıdır.
-    { title: "ID", dataIndex: "id", key: "id", width: 80 },
-    { title: "Tam Adı", dataIndex: "fullName", key: "fullName" },
-    { title: "Telefon", dataIndex: "phoneNumber", key: "phoneNumber" },
-    { title: "Email", dataIndex: "email", key: "email" },
+    { title: 'ID', dataIndex: 'id', key: 'id', width: 50 },
+    { title: 'Tam Adı', dataIndex: 'fullName', key: 'fullName' },
+    { title: 'Telefon', dataIndex: 'phoneNumber', key: 'phoneNumber' },
+    { title: 'Email', dataIndex: 'email', key: 'email' },
     {
-      title: "İşlemler",
-      key: "actions",
-      width: 200,
+      title: 'İşlemler',
+      key: 'actions',
+      width: 180,
       render: (_, record) => (
         <Space size="middle">
-          <Button icon={<EditOutlined />} onClick={() => showModal(record)}>
+          <Button icon={<EditOutlined />} size="small" onClick={() => handleEdit(record)}>
             Düzenle
           </Button>
           <Popconfirm
-            title="Bu müşteriyi silmek istediğinizden emin misiniz?"
+            title="Emin misiniz?"
             onConfirm={() => handleDelete(record.id)}
             okText="Evet"
             cancelText="Hayır"
           >
-            <Button danger icon={<DeleteOutlined />}>
+            <Button icon={<DeleteOutlined />} size="small" danger>
               Sil
             </Button>
           </Popconfirm>
@@ -150,110 +112,53 @@ const CustomerCRUDPage = () => {
   ];
 
   return (
-    <Layout style={{ minHeight: "100vh" }}>
-      <Header
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          background: "#fff",
-          padding: "0 24px",
-        }}
-      >
-        <Title level={4} style={{ margin: 0 }}>
-          Müşteri Yönetim Paneli
-        </Title>
-        <Space>
-          <Button
-            type="primary"
-            onClick={() => showModal(null)}
-            icon={<PlusOutlined />}
-          >
-            Yeni Müşteri Ekle
-          </Button>
-          <Button danger onClick={handleLogout}>
-            Çıkış Yap
-          </Button>
-        </Space>
-      </Header>
-      <Content style={{ padding: "24px" }}>
-        <div style={{ background: "#fff", padding: 24, minHeight: 280 }}>
-          <Title level={5}>Müşteri Listesi</Title>
+    // DashboardLayout'suz sadece içeriği döndürüyoruz
+    <>
+      <Title level={2}>Müşteri Yönetim Paneli</Title>
+      
+      <Row justify="end" style={{ marginBottom: 20 }}>
+        <Button 
+          type="primary" 
+          icon={<PlusOutlined />} 
+          onClick={() => handleEdit(null)}
+        >
+          Yeni Müşteri Ekle
+        </Button>
+      </Row>
 
-          {/* Müşteri Listesi Tablosu */}
-          <Table
-            columns={columns}
-            dataSource={customers}
-            rowKey="id"
-            loading={loading}
-            pagination={{ pageSize: 10 }}
-          />
-        </div>
-      </Content>
+      <Table 
+        dataSource={customers} 
+        columns={columns} 
+        loading={loading} 
+        rowKey="id" 
+        pagination={{ pageSize: 10 }}
+      />
 
-      {/* Ekleme/Güncelleme Modal'ı */}
       <Modal
         title={editingCustomer ? "Müşteri Düzenle" : "Yeni Müşteri Ekle"}
         open={isModalVisible}
-        onCancel={() => {
-          setIsModalVisible(false);
-          form.resetFields();
-        }}
+        onCancel={() => setIsModalVisible(false)}
         footer={null}
       >
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={onFinish}
-          // Düzenleme sırasında initialValues, showModal içinde set ediliyor.
-        >
-          <Form.Item
-            name="fullName"
-            label="Ad Soyad"
-            rules={[
-              { required: true, message: "Lütfen müşterinin adını giriniz!" },
-            ]}
-          >
+        <Form form={form} layout="vertical" onFinish={onFinish}>
+          <Form.Item name="fullName" label="Tam Adı" rules={[{ required: true }]}>
             <Input />
           </Form.Item>
-
-          <Form.Item
-            name="phoneNumber"
-            label="Telefon Numarası"
-            rules={[
-              { required: true, message: "Lütfen telefon numarasını giriniz!" },
-            ]}
-          >
+          <Form.Item name="phoneNumber" label="Telefon Numarası" rules={[{ required: true }]}>
             <Input />
           </Form.Item>
-
-          <Form.Item
-            name="email"
-            label="E-posta"
-            rules={[
-              { type: "email", message: "Geçerli bir e-posta adresi giriniz!" },
-            ]}
-          >
+          <Form.Item name="email" label="Email Adresi" rules={[{ type: 'email' }]}>
             <Input />
           </Form.Item>
-
-          <Form.Item style={{ textAlign: "right", marginTop: 20 }}>
-            <Button
-              style={{ marginRight: 8 }}
-              onClick={() => {
-                setIsModalVisible(false);
-                form.resetFields();
-              }}
-            >
-              İptal
-            </Button>
-            <Button type="primary" htmlType="submit" loading={loading}>
-              {editingCustomer ? "Güncelle" : "Kaydet"}
+          {/* Admin kaydında şifre vermiyoruz. Müşteri register olurken ekler. */}
+          <Form.Item>
+            <Button type="primary" htmlType="submit" block>
+              {editingCustomer ? "Kaydet ve Güncelle" : "Ekle"}
             </Button>
           </Form.Item>
         </Form>
       </Modal>
-    </Layout>
+    </>
   );
 };
 

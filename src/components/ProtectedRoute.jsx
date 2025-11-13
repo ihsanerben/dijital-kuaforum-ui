@@ -1,17 +1,18 @@
-// src/components/ProtectedRoute.jsx
+// src/components/ProtectedRoute.jsx - SADECE KORUMA (LAYOUT KALDIRILDI)
 
 import React from 'react';
-import { Navigate } from 'react-router-dom';
-// GÜNCELLEME: Admin oturumunu kontrol etmek için doğru fonksiyonu import edin
+// Outlet'i bu yapı için kullanmalıyız
+import { Navigate, Outlet } from 'react-router-dom'; 
 import { isAdminLoggedIn } from '../utils/storage'; 
 
-const ProtectedRoute = ({ children }) => {
-    // BURADAKİ FONKSİYON DA isAdminLoggedIn OLMALI
+const ProtectedRoute = () => {
+    // Eğer Admin giriş yapmadıysa, giriş sayfasına yönlendir
     if (!isAdminLoggedIn()) { 
-        // Giriş yapılmamışsa Admin giriş sayfasına yönlendir
         return <Navigate to="/adminGiris" replace />;
     }
-    return children;
+    
+    // Giriş yapılmışsa, içindeki alt rotayı (Layout'u) render et
+    return <Outlet />; 
 };
 
 export default ProtectedRoute;
