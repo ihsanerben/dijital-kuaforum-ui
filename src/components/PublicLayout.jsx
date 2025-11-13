@@ -1,20 +1,21 @@
-// src/components/PublicLayout.jsx
+// src/components/PublicLayout.jsx - SON FİNAL VE KESİN KOD
 
 import React from 'react';
 import { Layout, Menu, theme, Button, Row, Col, Typography, Divider } from 'antd';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { LoginOutlined, FacebookFilled, InstagramFilled, TwitterSquareFilled, YoutubeFilled, ArrowRightOutlined, PhoneOutlined, MailOutlined, HomeOutlined } from '@ant-design/icons';
+import { UserOutlined, CalendarOutlined, FacebookFilled, InstagramFilled, TwitterSquareFilled, YoutubeFilled, ArrowRightOutlined, PhoneOutlined, MailOutlined, HomeOutlined } from '@ant-design/icons';
 
 const { Header, Content, Footer } = Layout;
 const { Title, Paragraph, Link } = Typography;
 
-// Menü öğeleri - İletişim eklendi
+// YENİ SIRALAMAYA GÖRE GÜNCELLENMİŞ MENÜ ÖĞELERİ
 const publicMenuItems = [
+  { key: '/calendar', icon: <CalendarOutlined />, label: 'Haftalık Randevu Takvimi' },
   { key: '/', label: 'Anasayfa' },
-  { key: '/about', label: 'Hakkımızda' },
   { key: '/services', label: 'Hizmetlerimiz' },
   { key: '/prices', label: 'Fiyat Listesi' },
   { key: '/contact', label: 'İletişim' }, 
+  { key: '/about', label: 'Hakkımızda' },
 ];
 
 const PublicLayout = ({ children }) => {
@@ -29,15 +30,15 @@ const PublicLayout = ({ children }) => {
     navigate(key);
   };
   
-  const handleLoginClick = () => {
-    navigate('/login');
+  const handleUserAuthClick = () => {
+    navigate('/userAuth');
   };
   
   const selectedKey = publicMenuItems.find(item => location.pathname === item.key)?.key || '/';
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
-      {/* Üst Başlık (Header) - Sabitlenmiş ve Sıfır Noktasına Yapışık */}
+      {/* Üst Başlık (Header) */}
       <Header style={{ 
           display: 'flex', 
           alignItems: 'center', 
@@ -48,7 +49,7 @@ const PublicLayout = ({ children }) => {
           width: '100%',
           top: 0 
       }}>
-        {/* Sol Taraftaki Başlık (Logo) */}
+        {/* Sol Taraftaki Başlık (LOGO ADI GÜNCELLENDİ) */}
         <div 
             style={{ 
                 color: 'white', 
@@ -59,7 +60,7 @@ const PublicLayout = ({ children }) => {
             }}
             onClick={() => navigate('/')}
         >
-            Kuaför Yönetim
+            Rıdvan Cengiz Dijital Kuaförüm
         </div>
         
         {/* Sağ Taraftaki Menü ve Buton */}
@@ -72,18 +73,18 @@ const PublicLayout = ({ children }) => {
           style={{ borderBottom: 'none' }} 
         />
         
-        {/* KUAOFR GİRİŞ BUTONU */}
+        {/* KULLANICI GİRİŞ/KAYIT BUTONU */}
         <Button 
           type="primary" 
-          onClick={handleLoginClick} 
-          icon={<LoginOutlined />}
+          onClick={handleUserAuthClick} 
+          icon={<UserOutlined />}
           style={{ marginLeft: '20px' }} 
         >
-          Kuaför Girişi
+          Giriş Yap / Üye Ol
         </Button>
       </Header>
       
-      {/* Content - Header yüksekliği kadar üstten boşluk verilerek içeriğin kayması önlendi */}
+      {/* Content */}
       <Content
         style={{
           padding: '64px 50px 24px 50px', 
@@ -94,11 +95,10 @@ const PublicLayout = ({ children }) => {
         {children}
       </Content>
       
-      {/* FOOTER KISMI */}
+      {/* FOOTER KISMI - Bilgilerinizin doğru olduğunu varsayarak aynı kaldı. */}
       <Footer style={{ backgroundColor: '#f0f2f5', padding: '40px 50px 10px' }}>
         <Row gutter={[32, 32]} justify="center"> 
           
-          {/* SÜTUN 1: Logo ve Tanıtım */}
           <Col xs={24} md={10}> 
             <Title level={4} style={{ marginBottom: 15, color: '#695acb' }}>
               <span style={{ fontSize: '24px', fontWeight: 'bold' }}>dijital</span>Kuaför
@@ -114,7 +114,6 @@ const PublicLayout = ({ children }) => {
             </div>
           </Col>
 
-          {/* SÜTUN 2: BİZİMLE İLETİŞİME GEÇİN */}
           <Col xs={24} md={10} style={{ marginLeft: 'auto' }}> 
             <Title level={5} style={{ color: '#000', marginBottom: 15 }}>
               <ArrowRightOutlined style={{ marginRight: 8, color: '#695acb' }} /> Bizimle İletişime Geçin
@@ -133,7 +132,6 @@ const PublicLayout = ({ children }) => {
         
         <Divider style={{ margin: '20px 0 10px 0' }} />
         
-        {/* En Alt Bant */}
         <Row justify="space-between" align="middle" style={{ padding: '10px 0' }}>
             <Col>
                 <Paragraph style={{ color: '#8c8c8c', margin: 0 }}>

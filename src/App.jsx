@@ -31,6 +31,7 @@ function App() {
         <Route path="/services" element={<ServicesPage />} />
         <Route path="/contact" element={<ContactPage />} /> {/* YENİ ROTA */}
 
+
         {/* --- Korumalı Rotalar (Giriş Yapılması Gerekir) --- */}
         
         {/* Müşteri Yönetim Sayfası */}
@@ -46,6 +47,8 @@ function App() {
             <StatisticsPage />
           </ProtectedRoute>
         } />
+
+       
         
         {/* Giriş yapıldıktan sonra varsayılan olarak /customers'a yönlendir */}
         

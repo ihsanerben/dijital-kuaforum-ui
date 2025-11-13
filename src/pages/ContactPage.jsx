@@ -12,11 +12,9 @@ const CONTACT_INFO = {
     address: "Turing Otomobil Kurumu, Altınşehir Mahallesi Kral Sokak No: 1453 Daire: 7",
     email: "ihsanerben@gmail.com",
     phone: "0571 638 1453",
-    // Turing Otomobil Kurumu için örnek Google Haritalar embed URL'si
-    // Bu URL, Google Haritalar'da "Turing Otomobil Kurumu" araması yapılarak "Paylaş" -> "Harita Yerleştir"
-    // seçeneğinden alınan iframe src değeridir.
-    // Eğer farklı bir Turing şubesi istiyorsanız, bu URL'yi kendiniz değiştirebilirsiniz.
-    mapEmbedUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3009.682108220562!2d28.972385136418366!3d41.036211118024217!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x14cab8295a626a5b%3A0x6a0a0b6a0a0a0a0!2sTuring%20Otomobil%20Kurumu!5e0!3m2!1str!2str!4v1700685642867!5m2!1str!2str"
+    // Düzeltilmiş Google Haritalar embed URL'si (Turing Otomobil Kurumu, İstanbul)
+    // Bu URL'yi tam olarak çalışıp çalışmadığını kontrol ediniz. Çalışmazsa, kendi haritanızdan almanız gerekir.
+    mapEmbedUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3008.261908779653!2d28.9730511802111!3d41.06649856525996!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x14cab65d625d9095%3A0x63311e6216e25f8!2sTuring%20Otomobil%20Kurumu!5e0!3m2!1str!2str!4v1700473216599!5m2!1str!2str"
 };
 
 const ContactPage = () => {
