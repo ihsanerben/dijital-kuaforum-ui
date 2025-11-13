@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect,  useCallback } from "react";
 import {
   Layout,
   Typography,
@@ -34,35 +34,43 @@ const CustomerCRUDPage = () => {
   const [editingCustomer, setEditingCustomer] = useState(null); // Düzenlenen müşteri (null ise ekleme)
   const [form] = Form.useForm(); // Ant Design Form yönetimi için
 
-  // Müşterileri Backend'den Çekme Fonksiyonu
+  // Müşteri verilerini çekme fonksiyonu
   const fetchCustomers = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await getCustomers();
-      setCustomers(data);
-    } catch (error) {
-      message.error(
-        "Müşteri listesi çekilirken hata oluştu. Lütfen girişinizi kontrol edin."
-      );
-      console.error("Fetch Customer Error:", error);
-      if (error.response && error.response.status === 401) {
-        logout();
-        navigate("/login");
+      const { data } = await getCustomers();
+      
+      // HATA DÜZELTME: Gelen verinin dizi olup olmadığını kontrol et
+      if (Array.isArray(data)) { 
+        setCustomers(data);
+      } else if (data === null || data === undefined || (typeof data === 'object' && Object.keys(data).length === 0)) {
+        // Eğer boş bir nesne veya null gelirse, listeyi boş array olarak ayarla
+        setCustomers([]);
+      } else {
+        // Eğer beklenmeyen bir format (dizi değil, ama veri var) gelirse hata fırlat
+        console.error("Beklenmeyen müşteri listesi formatı:", data);
+        message.error("Müşteri listesi beklenmeyen formatta geldi.");
+        setCustomers([]);
       }
+    } catch (error) {
+      console.error(error);
+      message.error("Müşteri listesi çekilirken hata oluştu. Lütfen girişi kontrol edin.");
     } finally {
       setLoading(false);
     }
-  }, [navigate]);
-
+  }, [setCustomers, setLoading, message]); // message ve diğer dependency'ler (useState)
+  
+  // YENİ EKLENECEK KISIM: Component ilk yüklendiğinde çalıştır
   useEffect(() => {
     fetchCustomers();
-  }, [fetchCustomers]);
+  }, [fetchCustomers]); // fetchCustomers bir dependency olarak eklenmelidir.
 
-  const handleLogout = () => {
+  
+  function handleLogout() {
     logout();
     message.success("Başarıyla çıkış yapıldı.");
     navigate("/login");
-  };
+  }
 
   const onFinish = async (values) => {
     setLoading(true);

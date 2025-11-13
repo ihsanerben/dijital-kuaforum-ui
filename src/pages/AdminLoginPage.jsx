@@ -1,23 +1,30 @@
-// src/pages/AdminLoginPage.jsx (ESKİ LOGINPAGE'DEN GÜNCELLENDİ)
+// src/pages/AdminLoginPage.jsx - SON FİNAL DÜZELTME
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react'; // useEffect import edildi
 import { useNavigate } from "react-router-dom";
 import { Form, Input, Button, Card, Typography, message } from "antd";
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
-// authService, admin girişi için kullanılmaya devam edecek.
 import { login } from "../api/authService"; 
-import { isAdminLoggedIn } from '../utils/storage';
+import { isAdminLoggedIn } from '../utils/storage'; 
 import PublicLayout from '../components/PublicLayout'; 
 
 
 const { Title } = Typography;
-const AdminLoginPage = () => { // BİLEŞEN ADI DOĞRU
+
+const AdminLoginPage = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
-  // ADMİN ZATEN GİRİŞ YAPTIYSA DİREKT YÖNLENDİR
+  // YÖNLENDİRME MANTIĞI useEffect İÇİNE TAŞINDI
+  useEffect(() => {
+    if (isAdminLoggedIn()) {
+      // Admin zaten giriş yapmışsa direkt müşteriler sayfasına yönlendir
+      navigate("/customers", { replace: true });
+    }
+  }, [navigate]);
+
+  // YÖNLENDİRME GERÇEKLEŞMEDEN HEMEN ÖNCE BOŞ DÖN
   if (isAdminLoggedIn()) { 
-    navigate("/customers", { replace: true });
     return null;
   }
   
@@ -27,7 +34,6 @@ const AdminLoginPage = () => { // BİLEŞEN ADI DOĞRU
     let errorMessage = "";
 
     try {
-      // Admin (Kuaför) login işlemi
       await login(values.username, values.password);
       
       message.success("Yönetici girişi başarılı! Müşteri sayfasına yönlendiriliyorsunuz...");
