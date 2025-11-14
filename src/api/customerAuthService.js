@@ -16,7 +16,7 @@ export const registerOrUpdateCustomer = async (data) => {
         }
         return response.data;
     } catch (error) {
-        console.log("USER ICIN", error.response.data);
+        console.log("HATA --- USER ICIN (register islemi sirasinda olustu)", error.response.data);
         throw error;
     }
 };
@@ -32,7 +32,7 @@ export const loginCustomer = async (phoneNumber, password) => {
         }
         return response.data;
     } catch (error) {
-        // Hata yakalandıysa, hatayı yeniden fırlat
+        console.log("HATA --- USER ICIN (login islemi sirasinda olustu)", error.response.data);
         throw error; 
     }
 };

@@ -2,7 +2,7 @@
 
 import http from './http';
 import { getCustomerAuthData, getAdminAuthData } from '../utils/storage'; 
-
+import moment from 'moment'; // 👈 Moment kütüphanesini import edin!
 const BASE_URL = "/randevular";
 
 // Admin Yetkilendirme Başlıklarını Alır
@@ -18,9 +18,26 @@ export const getAppointmentsForCalendar = async (date) => {
     });
 };
 
-// 2. Yeni Randevu Oluşturma (Aynı Kalır)
+// 2. Yeni Randevu Oluşturma (BUG ÇÖZÜMÜ BURADA)
 export const createAppointment = async (startTime, serviceIds) => {
-    // ... (Müşteri doğrulama ve POST isteği mantığı aynı kalır) ...
+    const customerData = getCustomerAuthData();
+    
+    if (!customerData || !customerData.id) {
+        // Bu hata, zaten Login Kontrolü ile UserAuthPage'e yönlendirilerek engelleniyor
+        throw new Error("Randevu oluşturmak için müşteri oturumu açık olmalıdır."); 
+    }
+    
+    const formattedStartTime = moment(startTime).format('YYYY-MM-DDTHH:mm:ss');
+
+    const requestBody = {
+        // ÇÖZÜM: customerData.id değeri String'den Number'a çevrildi
+        customerId: Number(customerData.id), 
+        startTime: formattedStartTime, 
+        hizmetIdleri: serviceIds
+    };
+    
+    // POST /api/randevular/olustur
+    return http.post(`${BASE_URL}/olustur`, requestBody);
 };
 
 // --- YENİ ADMIN METOTLARI ---

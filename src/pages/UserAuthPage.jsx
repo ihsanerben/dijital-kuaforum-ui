@@ -38,37 +38,39 @@ const UserAuthPage = () => {
   // Giriş Formu Gönderimi
   // src/pages/UserAuthPage.jsx (onLoginFinish)
 
-    // Giriş Formu Gönderimi
-    const onLoginFinish = async (values) => {
-        setLoading(true);
-        const fullPhoneNumber = "+90" + values.phoneNumber; 
+  // Giriş Formu Gönderimi
+  const onLoginFinish = async (values) => {
+    setLoading(true);
+    const fullPhoneNumber = "+90" + values.phoneNumber;
 
-        try {
-            await loginCustomer(fullPhoneNumber, values.password);
-            message.success('Giriş başarılı! Randevu sayfasına yönlendiriliyorsunuz.');
-            navigate('/appointment', { replace: true }); 
-        } catch (error) {
-            // Backend'den gelen standart mesajı çekiyoruz (DTO'daki 'message')
-            const backendMessage = error.response?.data?.message;
-            let userMessage;
+    try {
+      await loginCustomer(fullPhoneNumber, values.password);
+      message.success(
+        "Giriş başarılı! Randevu sayfasına yönlendiriliyorsunuz."
+      );
+      navigate("/appointment", { replace: true });
+    } catch (error) {
+      const backendMessage = error.response?.data?.message;
+      let userMessage;
 
-            if (backendMessage && backendMessage.includes("Kullanıcı bulunamadı")) {
-                // Kullanıcı yoksa, register sekmesine yönlendiriyoruz
-                userMessage = "Sistemde bu numara kayıtlı DEĞİLDİR. Lütfen 'Üye Ol' sekmesine geçin.";
-            } else if (backendMessage && backendMessage.includes("Hatalı şifre")) {
-                // Şifre yanlışsa, şifremi unuttum linkini hatırlatıyoruz
-                userMessage = "Hatalı şifre girdiniz. Şifrenizi unuttuysanız 'Şifremi unuttum?' linkini kullanın.";
-            } else {
-                // Genel veya beklenmeyen hata
-                userMessage = backendMessage || 'Giriş işlemi sırasında beklenmeyen bir hata oluştu.';
-            }
-            
-            message.error(userMessage);
+      // 1. Kullanıcı Mesajını Belirle
+      if (backendMessage && backendMessage.includes("Kullanıcı bulunamadı")) {
+        userMessage =
+          "Bu numaraya kayıtlı bir kullanıcı YOKTUR. Lütfen 'Üye Ol' sekmesine geçin.";
+      } else if (backendMessage && backendMessage.includes("Hatalı şifre")) {
+        userMessage = "Bu numaraya kayıtlı bir kullanıcı vardır ancak girdiğiniz şifre hatalıdır. Lütfen kontrol ediniz.";
+      } else {
+        userMessage =
+          backendMessage ||
+          "Giriş işlemi sırasında beklenmeyen bir hata oluştu.";
+      }
 
-        } finally {
-            setLoading(false);
-        }
-    };
+      console.log("HATA --- USER ICIN (login islemi sirasinda olustu)", error.response.data);
+      alert(userMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Kayıt/Güncelleme Formu Gönderimi
   const onRegisterFinish = async (values) => {
@@ -89,8 +91,15 @@ const UserAuthPage = () => {
       );
       navigate("/appointment", { replace: true });
     } catch (error) {
+      const backendMessage = error;
+
+      console.log(backendMessage);
+      
+
+
       const msg = error.response?.data || "Kayıt işlemi başarısız oldu.";
-      message.error(msg);
+      console.log("HATA --- USER ICIN (register islemi sirasinda olustu)", error.response.data);
+      alert(msg);
     } finally {
       setLoading(false);
     }

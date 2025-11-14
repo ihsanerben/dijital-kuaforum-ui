@@ -93,7 +93,7 @@ const AppointmentPage = () => {
                 duration: 5, // Mesajı daha uzun süre göster
             });
             
-            navigate('/', { replace: true });
+            navigate('/calendar', { replace: true });
 
         } catch (error) {
             // Çakışma hatalarında özel mesaj göster

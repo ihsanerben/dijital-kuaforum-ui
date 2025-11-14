@@ -31,7 +31,7 @@ export const login = async (username, password) => {
 
     return response;
   } catch (error) {
-    console.log("ADMIN ICIN", error.response.data);
+    console.log("HATA --- ADMIN ICIN", error.response.data);
     throw error;
   }
 };

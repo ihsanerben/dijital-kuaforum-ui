@@ -237,7 +237,7 @@ const PublicCalendarPage = () => {
             </Button>
           ) : (
             <Text style={{ color: color, fontWeight: "bold" }}>
-              {isBooked ? "DOLU" : isPending ? "BEKLEMEDE" : "DOLU"}{" "}
+              {isBooked ? "DOLU" : isPending ? "BEKLEMEDE" : ""}{" "}
               {/* Statü Metin Ataması */}
             </Text>
           );

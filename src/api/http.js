@@ -18,6 +18,7 @@ http.interceptors.response.use(
     (error) => {
         // Hata yanıtı (4xx veya 5xx)
         if (error.response && error.response.status === 401) {
+          console.log("HATA --- (http.js kisminda bir hata var ???)", error.response.data);
             // Eğer 401 ise, Admin veya Müşteri oturumunu temizle
             // Bu kısım, hangi oturumun aktif olduğunu bilmediği için risklidir.
             // Amaç: Hatayı doğru formatta iletmek.
