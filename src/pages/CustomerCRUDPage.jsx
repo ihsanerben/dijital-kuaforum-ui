@@ -1,20 +1,20 @@
-// src/pages/CustomerCRUDPage.jsx - TEMİZLENMİŞ HAL
+// src/pages/CustomerCRUDPage.jsx - FİNAL VE EKSİKSİZ KOD
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { Typography, Table, Button, message, Popconfirm, Modal, Form, Input, Row, Space } from "antd";
 import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
-// DashboardLayout importu SİLİNDİ
 import { getCustomers, createCustomer, updateCustomer, deleteCustomer } from "../api/customerService";
 import { useNavigate } from "react-router-dom";
+// DashboardLayout importu kaldırılmıştır, rota yapısı gereği artık dışarıdan sarılmaktadır.
 
-const { Title, Content } = Typography; // Content artık Typography'den geliyor
+const { Title } = Typography;
 
 const CustomerCRUDPage = () => {
   const navigate = useNavigate();
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [editingCustomer, setEditingCustomer] = useState(null); // Düzenlenen müşteri (null = ekleme)
+  const [editingCustomer, setEditingCustomer] = useState(null); 
   const [form] = Form.useForm();
 
   // Müşterileri Backend'den Çekme Fonksiyonu
@@ -43,7 +43,15 @@ const CustomerCRUDPage = () => {
   const handleEdit = (customer) => {
     setEditingCustomer(customer);
     if (customer) {
-      form.setFieldsValue(customer);
+      // Düzenleme modunda, telefon numarasını +90'sız göster
+      const rawPhoneNumber = customer.phoneNumber.startsWith('+90') 
+        ? customer.phoneNumber.substring(3) 
+        : customer.phoneNumber;
+        
+      form.setFieldsValue({
+        ...customer,
+        phoneNumber: rawPhoneNumber
+      });
     } else {
       form.resetFields();
     }
@@ -52,22 +60,33 @@ const CustomerCRUDPage = () => {
 
   // Form Gönderimi (Ekleme/Düzenleme)
   const onFinish = async (values) => {
+    setLoading(true);
+    
+    // Telefon numarasının başına +90 ekliyoruz
+    const fullPhoneNumber = "+90" + values.phoneNumber; 
+    
+    const dataToSend = {
+        ...values,
+        phoneNumber: fullPhoneNumber,
+        // E-posta formdan kaldırıldı ancak values'ta olmayacağı için sorun yok.
+    };
+
     try {
       if (editingCustomer) {
         // Düzenleme
-        await updateCustomer(editingCustomer.id, values);
+        await updateCustomer(editingCustomer.id, dataToSend);
         message.success("Müşteri başarıyla güncellendi.");
       } else {
         // Ekleme
-        // Not: Backend'iniz DTO beklediği için bu kısım DTO yapısına göre düzenlenmelidir.
-        // Bu basitlik için DTO'yu serviste sarmaladığımızı varsayıyoruz.
-        await createCustomer(values);
+        await createCustomer(dataToSend);
         message.success("Müşteri başarıyla eklendi.");
       }
       setIsModalVisible(false);
       fetchCustomers();
     } catch (error) {
       message.error(`İşlem başarısız: ${error.response?.data || 'Sunucu hatası'}`);
+    } finally {
+        setLoading(false);
     }
   };
 
@@ -112,7 +131,6 @@ const CustomerCRUDPage = () => {
   ];
 
   return (
-    // DashboardLayout'suz sadece içeriği döndürüyoruz
     <>
       <Title level={2}>Müşteri Yönetim Paneli</Title>
       
@@ -141,16 +159,31 @@ const CustomerCRUDPage = () => {
         footer={null}
       >
         <Form form={form} layout="vertical" onFinish={onFinish}>
-          <Form.Item name="fullName" label="Tam Adı" rules={[{ required: true }]}>
+          <Form.Item 
+             name="fullName" 
+             label="Tam Adı" 
+             rules={[{ required: true, message: 'Lütfen müşterinin adını girin.' }]}
+          >
             <Input />
           </Form.Item>
-          <Form.Item name="phoneNumber" label="Telefon Numarası" rules={[{ required: true }]}>
-            <Input />
+          
+          <Form.Item 
+             name="phoneNumber" 
+             label="Telefon Numarası (0 olmadan 10 hane)" 
+             rules={[
+                { required: true, message: 'Lütfen telefon numarasını girin.' },
+                { len: 10, message: 'Telefon numarası 10 hane olmalıdır.' }
+             ]}
+          >
+            <Input 
+                addonBefore="+90" // SABİT ÖN EK
+                placeholder="5321234567" 
+                maxLength={10} // 10 haneyi zorunlu kıl
+            />
           </Form.Item>
-          <Form.Item name="email" label="Email Adresi" rules={[{ type: 'email' }]}>
-            <Input />
-          </Form.Item>
-          {/* Admin kaydında şifre vermiyoruz. Müşteri register olurken ekler. */}
+          
+          {/* E-POSTA ALANI KALDIRILDI */}
+          
           <Form.Item>
             <Button type="primary" htmlType="submit" block>
               {editingCustomer ? "Kaydet ve Güncelle" : "Ekle"}

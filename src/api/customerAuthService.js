@@ -1,34 +1,42 @@
-// src/api/customerAuthService.js - GÜNCELLENMİŞ
+// src/api/customerAuthService.js - HATALARI YAKALAYAN GÜNCEL KOD
 
 import http from './http';
-// YENİ VE DOĞRU MÜŞTERİ FONKSİYONLARI IMPORT EDİLİYOR
 import { saveCustomerAuthData, clearCustomerAuthData } from '../utils/storage'; 
 
-const AUTH_BASE_URL = "/public/customerAuth"; // Rota düzenlendi (API prefix'i eklendi)
+const AUTH_BASE_URL = "/public/customerAuth"; 
 
 export const registerOrUpdateCustomer = async (data) => {
-    // Kayıt/Güncelleme isteği
-    const response = await http.post(`${AUTH_BASE_URL}/register`, data);
-    
-    // Başarılı olursa, müşteri verilerini AYRI ANAHTARDA sakla
-    if (response.data) {
-        saveCustomerAuthData(response.data); 
+    try {
+        // Kayıt/Güncelleme isteği
+        const response = await http.post(`${AUTH_BASE_URL}/register`, data);
+        
+        // Başarılı olursa, müşteri verilerini sakla
+        if (response.data) {
+            saveCustomerAuthData(response.data); 
+        }
+        return response.data;
+    } catch (error) {
+        console.log("USER ICIN", error.response.data);
+        throw error;
     }
-    return response.data;
 };
 
 export const loginCustomer = async (phoneNumber, password) => {
-    // Giriş isteği
-    const response = await http.post(`${AUTH_BASE_URL}/login`, { phoneNumber, password });
-    
-    // Başarılı olursa, müşteri verilerini AYRI ANAHTARDA sakla
-    if (response.data) {
-        saveCustomerAuthData(response.data);
+    try {
+        // Giriş isteği
+        const response = await http.post(`${AUTH_BASE_URL}/login`, { phoneNumber, password });
+        
+        // Başarılı olursa, müşteri verilerini sakla
+        if (response.data) {
+            saveCustomerAuthData(response.data);
+        }
+        return response.data;
+    } catch (error) {
+        // Hata yakalandıysa, hatayı yeniden fırlat
+        throw error; 
     }
-    return response.data;
 };
 
 export const logoutCustomer = () => {
-    // MÜŞTERİ VERİLERİNİ TEMİZLE
     clearCustomerAuthData();
 };
