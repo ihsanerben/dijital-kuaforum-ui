@@ -16,18 +16,14 @@ const AdminLoginPage = () => {
   // Ant Design mesaj API'si hook'u
   const [messageApi, contextHolder] = message.useMessage();
 
-  useEffect(() => {
-    if (isAdminLoggedIn()) navigate("/customers", { replace: true });
-  }, [navigate]);
-
-  if (isAdminLoggedIn()) return null;
-
   const onFinish = async (values) => {
     setLoading(true);
     try {
       await login(values.username, values.password);
-      messageApi.success("Yönetici girişi başarılı! Yönlendiriliyorsunuz...");
-      navigate("/customers", { replace: true });
+      messageApi.success("BASARILI! --- Yönlendiriliyorsunuz...");
+      setTimeout(() => {
+        navigate("/customers", { replace: true });
+      }, 1000); 
     } catch (error) {
       const errMsg =
         error.response?.status === 401

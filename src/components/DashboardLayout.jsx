@@ -30,6 +30,10 @@ const menuItems = [
 
 // children prop'u kaldırıldı
 const DashboardLayout = () => { 
+
+  const [messageApi, contextHolder] = message.useMessage();
+
+
   const navigate = useNavigate();
   const location = useLocation(); 
   
@@ -43,14 +47,19 @@ const DashboardLayout = () => {
   
   const handleLogout = () => {
       clearAdminAuthData(); 
-      message.success('Başarıyla çıkış yapıldı.');
-      navigate('/adminGiris', { replace: true }); 
+      messageApi.success('Başarıyla çıkış yapıldı.');
+
+      setTimeout(() => {
+        navigate('/adminGiris', { replace: true }); 
+      }, 1000);       
   };
 
   // Menüde aktif olan öğeyi belirler
   const selectedKey = menuItems.find(item => location.pathname.startsWith(item.key))?.key || '/adminCalendar';
 
   return (
+    <>  
+    {contextHolder}
     <Layout style={{ minHeight: '100vh' }}>
       {/* Sol Kenar Çubuğu (SABİT SİDEBAR) */}
       <Sider 
@@ -111,6 +120,7 @@ const DashboardLayout = () => {
         </Content>
       </Layout>
     </Layout>
+    </>
   );
 };
 

@@ -24,7 +24,6 @@ const AppointmentPage = () => {
     useEffect(() => {
         if (!startTimeIso) {
             messageApi.error('Randevu saati seçilmedi. Takvimden seçim yapın.');
-            navigate('/calendar', { replace: true });
             return;
         }
 
@@ -62,7 +61,6 @@ const AppointmentPage = () => {
                 ),
                 duration: 5
             });
-            navigate('/calendar', { replace: true });
         } catch (error) {
             if (error.response?.status === 409) {
                 messageApi.error('Seçilen saat başkası tarafından alınmış veya çakışma oluştu.');
