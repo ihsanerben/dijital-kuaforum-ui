@@ -13,7 +13,6 @@ import {
   loginCustomer,
   registerOrUpdateCustomer,
 } from "../api/customerAuthService";
-import { isCustomerLoggedIn } from "../utils/storage";
 
 const { Title } = Typography;
 
@@ -24,15 +23,13 @@ const UserAuthPage = () => {
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("login");
 
-  useEffect(() => {
-    if (isCustomerLoggedIn()) {
-      navigate("/appointment", { replace: true });
-    }
-  }, [messageApi]);
-
-  if (isCustomerLoggedIn()) {
-    return null;
-  }
+  // useEffect(() => {
+  //   if (isCustomerLoggedIn()) {
+  //     setTimeout(() => {
+  //       navigate("/appointment", { replace: true });
+  //     }, 1000); 
+  //   }
+  // }, [messageApi]);
 
   // --- Giriş İşlemi ---
   const onLoginFinish = async (values) => {
@@ -44,7 +41,9 @@ const UserAuthPage = () => {
       messageApi.success(
         "Giriş başarılı! Randevu sayfasına yönlendiriliyorsunuz."
       );
-      navigate("/appointment", { replace: true });
+      setTimeout(() => {
+        navigate("/appointment", { replace: true });
+      }, 1000); 
     } catch (error) {
       const backendMessage = error.response?.data?.messageApi;
       let userMessage;

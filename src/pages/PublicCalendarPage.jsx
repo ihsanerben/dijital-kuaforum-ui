@@ -26,6 +26,9 @@ const IS_BITIS_SAATI = 18;
 const TIME_STEP_MINUTES = 5;
 
 const PublicCalendarPage = () => {
+    const [messageApi, contextHolder] = message.useMessage();
+  
+
   const [currentWeekStart, setCurrentWeekStart] = useState(
     moment().startOf("isoWeek")
   );
@@ -118,7 +121,7 @@ const PublicCalendarPage = () => {
       setWeeklySchedule(newWeeklySchedule);
     } catch (error) {
       console.error("Haftalık Takvim Hatası:", error);
-      message.error("Haftalık takvim verileri yüklenemedi!");
+      messageApi.error("Haftalık takvim verileri yüklenemedi!");
       setWeeklySchedule({});
     } finally {
       setLoading(false);
@@ -137,10 +140,13 @@ const PublicCalendarPage = () => {
 
   const handleRandevuAl = (dateIso) => {
     if (loggedIn) {
+      messageApi.success("Randevunuz basariyla gonderildi.");
       navigate(`/appointment?date=${dateIso}`);
     } else {
-      message.warning("Randevu almak için lütfen giriş yapınız.");
-      navigate("/userAuth");
+      messageApi.warning("Randevu almak için lütfen giriş yapınız.");
+      setTimeout(() => {
+        navigate("/userAuth", { replace: true });
+      }, 1000);
     }
   };
 
@@ -228,40 +234,50 @@ const PublicCalendarPage = () => {
   )} - ${currentWeekStart.clone().add(6, "days").format("DD/MM/YYYY")}`;
 
   return (
-    <PublicLayout>
-      <Row justify="space-between" align="middle" style={{ marginBottom: 20 }}>
-        <Col>
-          <Title level={2}>Haftalık Randevu Takvimi</Title>
-          <Text>
-            Kuaförümüzün haftalık müsait saatlerini 5 dakikalık dilimlerle
-            görebilirsiniz.
-          </Text>
-        </Col>
-        <Col>
-          <Space>
-            <Button icon={<ArrowLeftOutlined />} onClick={handlePreviousWeek} />
-            <Title level={4} style={{ margin: 0 }}>
-              {weekDisplay}
-            </Title>
-            <Button icon={<ArrowRightOutlined />} onClick={handleNextWeek} />
-          </Space>
-        </Col>
-      </Row>
+    <>
+      {contextHolder}
+      <PublicLayout>
+        <Row
+          justify="space-between"
+          align="middle"
+          style={{ marginBottom: 20 }}
+        >
+          <Col>
+            <Title level={2}>Haftalık Randevu Takvimi</Title>
+            <Text>
+              Kuaförümüzün haftalık müsait saatlerini 5 dakikalık dilimlerle
+              görebilirsiniz.
+            </Text>
+          </Col>
+          <Col>
+            <Space>
+              <Button
+                icon={<ArrowLeftOutlined />}
+                onClick={handlePreviousWeek}
+              />
+              <Title level={4} style={{ margin: 0 }}>
+                {weekDisplay}
+              </Title>
+              <Button icon={<ArrowRightOutlined />} onClick={handleNextWeek} />
+            </Space>
+          </Col>
+        </Row>
 
-      <Spin spinning={loading}>
-        <Table
-          columns={getColumns()}
-          dataSource={getRowData()}
-          pagination={false}
-          bordered
-          scroll={{ x: 1200, y: 700 }}
-          size="small"
-          locale={{
-            emptyText: "Bu haftaya ait randevu verisi bulunmamaktadır.",
-          }}
-        />
-      </Spin>
-    </PublicLayout>
+        <Spin spinning={loading}>
+          <Table
+            columns={getColumns()}
+            dataSource={getRowData()}
+            pagination={false}
+            bordered
+            scroll={{ x: 1200, y: 700 }}
+            size="small"
+            locale={{
+              emptyText: "Bu haftaya ait randevu verisi bulunmamaktadır.",
+            }}
+          />
+        </Spin>
+      </PublicLayout>
+    </>
   );
 };
 
