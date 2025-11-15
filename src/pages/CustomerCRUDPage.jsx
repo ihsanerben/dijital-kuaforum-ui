@@ -1,118 +1,126 @@
-// src/pages/CustomerCRUDPage.jsx - FİNAL VE EKSİKSİZ KOD
-
-import React, { useState, useEffect, useCallback } from 'react';
-import { Typography, Table, Button, message, Popconfirm, Modal, Form, Input, Row, Space } from "antd";
+// src/pages/CustomerCRUDPage.jsx
+import React, { useState, useEffect, useCallback } from "react";
+import {
+  Typography,
+  Table,
+  Button,
+  message,
+  Popconfirm,
+  Modal,
+  Form,
+  Input,
+  Row,
+  Space,
+} from "antd";
 import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
-import { getCustomers, createCustomer, updateCustomer, deleteCustomer } from "../api/customerService";
-import { useNavigate } from "react-router-dom";
-// DashboardLayout importu kaldırılmıştır, rota yapısı gereği artık dışarıdan sarılmaktadır.
+import {
+  getCustomers,
+  createCustomer,
+  updateCustomer,
+  deleteCustomer,
+} from "../api/customerService";
 
 const { Title } = Typography;
 
 const CustomerCRUDPage = () => {
-  const navigate = useNavigate();
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [editingCustomer, setEditingCustomer] = useState(null); 
+  const [editingCustomer, setEditingCustomer] = useState(null);
   const [form] = Form.useForm();
 
-  // Müşterileri Backend'den Çekme Fonksiyonu
+  // Ant Design mesaj API
+  const [messageApi, contextHolder] = message.useMessage();
+
+  // Müşteri listesi çekme
   const fetchCustomers = useCallback(async () => {
     setLoading(true);
     try {
       const response = await getCustomers();
-      if (Array.isArray(response.data)) {
-        setCustomers(response.data);
-      } else {
-        setCustomers([]);
-      }
+      if (Array.isArray(response.data)) setCustomers(response.data);
+      else setCustomers([]);
     } catch (error) {
-      console.error("Müşteri listesi çekilirken hata oluştu:", error);
-      message.error("Müşteri listesi çekilirken hata oluştu. Lütfen girişi kontrol edin.");
+      console.error(error);
+      messageApi.error("Müşteri listesi çekilirken hata oluştu.");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [messageApi]);
 
   useEffect(() => {
     fetchCustomers();
   }, [fetchCustomers]);
 
-  // Yeni/Düzenleme Modal'ını Açma
+  // Modal açma
   const handleEdit = (customer) => {
     setEditingCustomer(customer);
     if (customer) {
-      // Düzenleme modunda, telefon numarasını +90'sız göster
-      const rawPhoneNumber = customer.phoneNumber.startsWith('+90') 
-        ? customer.phoneNumber.substring(3) 
+      const rawPhoneNumber = customer.phoneNumber.startsWith("+90")
+        ? customer.phoneNumber.substring(3)
         : customer.phoneNumber;
-        
-      form.setFieldsValue({
-        ...customer,
-        phoneNumber: rawPhoneNumber
-      });
+
+      form.setFieldsValue({ ...customer, phoneNumber: rawPhoneNumber });
     } else {
       form.resetFields();
     }
     setIsModalVisible(true);
   };
 
-  // Form Gönderimi (Ekleme/Düzenleme)
+  // Form gönderimi
   const onFinish = async (values) => {
     setLoading(true);
-    
-    // Telefon numarasının başına +90 ekliyoruz
-    const fullPhoneNumber = "+90" + values.phoneNumber; 
-    
-    const dataToSend = {
-        ...values,
-        phoneNumber: fullPhoneNumber,
-        // E-posta formdan kaldırıldı ancak values'ta olmayacağı için sorun yok.
-    };
+    const fullPhoneNumber = "+90" + values.phoneNumber;
+    const dataToSend = { ...values, phoneNumber: fullPhoneNumber };
 
     try {
       if (editingCustomer) {
-        // Düzenleme
         await updateCustomer(editingCustomer.id, dataToSend);
-        message.success("Müşteri başarıyla güncellendi.");
+        messageApi.success("Müşteri başarıyla güncellendi.");
       } else {
-        // Ekleme
         await createCustomer(dataToSend);
-        message.success("Müşteri başarıyla eklendi.");
+        messageApi.success("Müşteri başarıyla eklendi.");
       }
       setIsModalVisible(false);
       fetchCustomers();
     } catch (error) {
-      message.error(`İşlem başarısız: ${error.response?.data || 'Sunucu hatası'}`);
+      console.error(error);
+      messageApi.error("Bu telefon numarasına kayıtlı bir müşteri zaten mevcut.");
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
   };
 
-  // Müşteri Silme
+  // Müşteri silme
   const handleDelete = async (id) => {
+    setLoading(true);
     try {
       await deleteCustomer(id);
-      message.success("Müşteri başarıyla silindi.");
+      messageApi.success("Müşteri başarıyla silindi.");
       fetchCustomers();
     } catch (error) {
-      message.error(`Silme başarısız: ${error.response?.data || 'Sunucu hatası'}`);
+      console.error(error);
+      messageApi.warning("Silme işlemi başarısız oldu.");
+    } finally {
+      setLoading(false);
     }
   };
 
   const columns = [
-    { title: 'ID', dataIndex: 'id', key: 'id', width: 50 },
-    { title: 'Tam Adı', dataIndex: 'fullName', key: 'fullName' },
-    { title: 'Telefon', dataIndex: 'phoneNumber', key: 'phoneNumber' },
-    { title: 'Email', dataIndex: 'email', key: 'email' },
+    { title: "ID", dataIndex: "id", key: "id", width: 50 },
+    { title: "Tam Adı", dataIndex: "fullName", key: "fullName" },
+    { title: "Telefon", dataIndex: "phoneNumber", key: "phoneNumber" },
+    { title: "Email", dataIndex: "email", key: "email" },
     {
-      title: 'İşlemler',
-      key: 'actions',
+      title: "İşlemler",
+      key: "actions",
       width: 180,
       render: (_, record) => (
         <Space size="middle">
-          <Button icon={<EditOutlined />} size="small" onClick={() => handleEdit(record)}>
+          <Button
+            icon={<EditOutlined />}
+            size="small"
+            onClick={() => handleEdit(record)}
+          >
             Düzenle
           </Button>
           <Popconfirm
@@ -132,23 +140,24 @@ const CustomerCRUDPage = () => {
 
   return (
     <>
+      {contextHolder} {/* <-- Ant Design mesajları için */}
       <Title level={2}>Müşteri Yönetim Paneli</Title>
-      
+
       <Row justify="end" style={{ marginBottom: 20 }}>
-        <Button 
-          type="primary" 
-          icon={<PlusOutlined />} 
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
           onClick={() => handleEdit(null)}
         >
           Yeni Müşteri Ekle
         </Button>
       </Row>
 
-      <Table 
-        dataSource={customers} 
-        columns={columns} 
-        loading={loading} 
-        rowKey="id" 
+      <Table
+        dataSource={customers}
+        columns={columns}
+        loading={loading}
+        rowKey="id"
         pagination={{ pageSize: 10 }}
       />
 
@@ -159,31 +168,25 @@ const CustomerCRUDPage = () => {
         footer={null}
       >
         <Form form={form} layout="vertical" onFinish={onFinish}>
-          <Form.Item 
-             name="fullName" 
-             label="Tam Adı" 
-             rules={[{ required: true, message: 'Lütfen müşterinin adını girin.' }]}
+          <Form.Item
+            name="fullName"
+            label="Tam Adı"
+            rules={[{ required: true, message: "Lütfen müşterinin adını girin." }]}
           >
             <Input />
           </Form.Item>
-          
-          <Form.Item 
-             name="phoneNumber" 
-             label="Telefon Numarası (0 olmadan 10 hane)" 
-             rules={[
-                { required: true, message: 'Lütfen telefon numarasını girin.' },
-                { len: 10, message: 'Telefon numarası 10 hane olmalıdır.' }
-             ]}
+
+          <Form.Item
+            name="phoneNumber"
+            label="Telefon Numarası (0 olmadan 10 hane)"
+            rules={[
+              { required: true, message: "Lütfen telefon numarasını girin." },
+              { len: 10, message: "Telefon numarası 10 hane olmalıdır." },
+            ]}
           >
-            <Input 
-                addonBefore="+90" // SABİT ÖN EK
-                placeholder="5321234567" 
-                maxLength={10} // 10 haneyi zorunlu kıl
-            />
+            <Input addonBefore="+90" placeholder="5321234567" maxLength={10} />
           </Form.Item>
-          
-          {/* E-POSTA ALANI KALDIRILDI */}
-          
+
           <Form.Item>
             <Button type="primary" htmlType="submit" block>
               {editingCustomer ? "Kaydet ve Güncelle" : "Ekle"}

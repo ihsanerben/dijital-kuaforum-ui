@@ -1,5 +1,4 @@
-// src/pages/UserAuthPage.jsx - +90 DÜZELTMESİ VE SON HALİ
-
+// src/pages/UserAuthPage.jsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Form, Input, Button, Card, Typography, Tabs, message } from "antd";
@@ -19,100 +18,87 @@ import { isCustomerLoggedIn } from "../utils/storage";
 const { Title } = Typography;
 
 const UserAuthPage = () => {
+  const [messageApi, contextHolder] = message.useMessage();
+
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("login");
 
-  // Yönlendirme mantığı useEffect içine taşındı
   useEffect(() => {
     if (isCustomerLoggedIn()) {
       navigate("/appointment", { replace: true });
     }
-  }, [navigate]);
+  }, [messageApi]);
 
-  // Eğer kullanıcı zaten giriş yapmışsa boş döner
   if (isCustomerLoggedIn()) {
     return null;
   }
 
-  // Giriş Formu Gönderimi
-  // src/pages/UserAuthPage.jsx (onLoginFinish)
-
-  // Giriş Formu Gönderimi
+  // --- Giriş İşlemi ---
   const onLoginFinish = async (values) => {
     setLoading(true);
     const fullPhoneNumber = "+90" + values.phoneNumber;
 
     try {
       await loginCustomer(fullPhoneNumber, values.password);
-      message.success(
+      messageApi.success(
         "Giriş başarılı! Randevu sayfasına yönlendiriliyorsunuz."
       );
       navigate("/appointment", { replace: true });
     } catch (error) {
-      const backendMessage = error.response?.data?.message;
+      const backendMessage = error.response?.data?.messageApi;
       let userMessage;
 
-      // 1. Kullanıcı Mesajını Belirle
       if (backendMessage && backendMessage.includes("Kullanıcı bulunamadı")) {
         userMessage =
           "Bu numaraya kayıtlı bir kullanıcı YOKTUR. Lütfen 'Üye Ol' sekmesine geçin.";
       } else if (backendMessage && backendMessage.includes("Hatalı şifre")) {
-        userMessage = "Bu numaraya kayıtlı bir kullanıcı vardır ancak girdiğiniz şifre hatalıdır. Lütfen kontrol ediniz.";
+        userMessage =
+          "Bu numaraya kayıtlı bir kullanıcı vardır ancak girdiğiniz şifre hatalıdır. Lütfen kontrol ediniz.";
       } else {
         userMessage =
           backendMessage ||
           "Giriş işlemi sırasında beklenmeyen bir hata oluştu.";
       }
 
-      console.log("HATA --- USER ICIN (login islemi sirasinda olustu)", error.response.data);
-      alert(userMessage);
+      console.error("LOGIN HATA:", error.response?.data);
+      messageApi.error(userMessage);
     } finally {
       setLoading(false);
     }
   };
 
-  // Kayıt/Güncelleme Formu Gönderimi
+  // --- Kayıt / Güncelleme İşlemi ---
   const onRegisterFinish = async (values) => {
     setLoading(true);
-    // +90 ön ekini ekle
     const fullPhoneNumber = "+90" + values.phoneNumber;
-
-    const dataToSend = {
-      ...values,
-      phoneNumber: fullPhoneNumber,
-    };
+    const dataToSend = { ...values, phoneNumber: fullPhoneNumber };
 
     try {
       await registerOrUpdateCustomer(dataToSend);
-
-      message.success(
+      messageApi.success(
         "İşlem başarılı! Giriş yapıldı ve randevu sayfasına yönlendiriliyorsunuz."
       );
       navigate("/appointment", { replace: true });
     } catch (error) {
-      const backendMessage = error;
-
-      console.log(backendMessage);
-      
-
-
-      const msg = error.response?.data || "Kayıt işlemi başarısız oldu.";
-      console.log("HATA --- USER ICIN (register islemi sirasinda olustu)", error.response.data);
-      alert(msg);
+      const backendMessage =
+        error.response?.data || "Kayıt işlemi başarısız oldu.";
+      console.error("REGISTER HATA:", error.response?.data);
+      messageApi.error(backendMessage);
     } finally {
       setLoading(false);
     }
   };
 
+  // --- Formlar ---
   const loginForm = (
     <Form name="customer_login" onFinish={onLoginFinish} layout="vertical">
       <Form.Item
         name="phoneNumber"
         label="Telefon Numarası (0 olmadan 10 hane)"
         rules={[
-          { required: true, message: "Lütfen telefon numaranızı girin!" },
-          { len: 10, message: "Telefon numarası 10 hane olmalıdır." },
+          { required: true, messageApi: "Lütfen telefon numaranızı girin!" },
+          { len: 10, messageApi: "Telefon numarası 10 hane olmalıdır." },
         ]}
       >
         <Input
@@ -125,7 +111,7 @@ const UserAuthPage = () => {
       <Form.Item
         name="password"
         label="Şifre"
-        rules={[{ required: true, message: "Lütfen şifrenizi girin!" }]}
+        rules={[{ required: true, messageApi: "Lütfen şifrenizi girin!" }]}
       >
         <Input.Password prefix={<LockOutlined />} placeholder="Şifre" />
       </Form.Item>
@@ -137,7 +123,7 @@ const UserAuthPage = () => {
       <div style={{ textAlign: "center" }}>
         <a
           onClick={() =>
-            message.info("Bu özellik için e-posta entegrasyonu gereklidir.")
+            messageApi.info("Bu özellik için e-posta entegrasyonu gereklidir.")
           }
         >
           Şifremi unuttum?
@@ -156,7 +142,7 @@ const UserAuthPage = () => {
         name="fullName"
         label="Ad Soyad"
         rules={[
-          { required: true, message: "Lütfen adınızı ve soyadınızı girin!" },
+          { required: true, messageApi: "Lütfen adınızı ve soyadınızı girin!" },
         ]}
       >
         <Input prefix={<UserOutlined />} placeholder="Ad Soyad" />
@@ -165,8 +151,8 @@ const UserAuthPage = () => {
         name="phoneNumber"
         label="Telefon Numarası (0 olmadan 10 hane)"
         rules={[
-          { required: true, message: "Lütfen telefon numaranızı girin!" },
-          { len: 10, message: "Telefon numarası 10 hane olmalıdır." },
+          { required: true, messageApi: "Lütfen telefon numaranızı girin!" },
+          { len: 10, messageApi: "Telefon numarası 10 hane olmalıdır." },
         ]}
         extra="Telefon numaranız sistemde önceden kayıtlıysa, hesabınız güncellenecektir."
       >
@@ -184,7 +170,7 @@ const UserAuthPage = () => {
           {
             type: "email",
             required: true,
-            message: "Lütfen geçerli bir e-posta girin!",
+            messageApi: "Lütfen geçerli bir e-posta girin!",
           },
         ]}
       >
@@ -193,7 +179,7 @@ const UserAuthPage = () => {
       <Form.Item
         name="password"
         label="Şifre Belirle"
-        rules={[{ required: true, message: "Lütfen şifrenizi belirleyin!" }]}
+        rules={[{ required: true, messageApi: "Lütfen şifrenizi belirleyin!" }]}
       >
         <Input.Password prefix={<LockOutlined />} placeholder="Şifre" />
       </Form.Item>
@@ -215,32 +201,35 @@ const UserAuthPage = () => {
   ];
 
   return (
-    <PublicLayout>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          minHeight: "calc(100vh - 180px)",
-        }}
-      >
-        <Card
-          title={
-            <Title level={3} style={{ marginBottom: 0 }}>
-              Müşteri Girişi ve Kaydı
-            </Title>
-          }
-          style={{ width: 450 }}
+    <>
+      {contextHolder}
+      <PublicLayout>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            minHeight: "calc(100vh - 180px)",
+          }}
         >
-          <Tabs
-            activeKey={activeTab}
-            onChange={setActiveTab}
-            items={items}
-            centered
-          />
-        </Card>
-      </div>
-    </PublicLayout>
+          <Card
+            title={
+              <Title level={3} style={{ marginBottom: 0 }}>
+                Müşteri Girişi ve Kaydı
+              </Title>
+            }
+            style={{ width: 450 }}
+          >
+            <Tabs
+              activeKey={activeTab}
+              onChange={setActiveTab}
+              items={items}
+              centered
+            />
+          </Card>
+        </div>
+      </PublicLayout>
+    </>
   );
 };
 

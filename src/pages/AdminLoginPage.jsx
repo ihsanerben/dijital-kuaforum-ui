@@ -1,13 +1,11 @@
-// src/pages/AdminLoginPage.jsx - SON FİNAL DÜZELTME
-
-import React, { useState, useEffect } from "react"; // useEffect import edildi
+// src/pages/AdminLoginPage.jsx
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Form, Input, Button, Card, Typography, message } from "antd";
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
 import { login } from "../api/authService";
 import { isAdminLoggedIn } from "../utils/storage";
 import PublicLayout from "../components/PublicLayout";
-import { all } from "axios";
 
 const { Title } = Typography;
 
@@ -15,102 +13,98 @@ const AdminLoginPage = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
-  // YÖNLENDİRME MANTIĞI useEffect İÇİNE TAŞINDI
+  // Ant Design mesaj API'si hook'u
+  const [messageApi, contextHolder] = message.useMessage();
+
   useEffect(() => {
-    if (isAdminLoggedIn()) {
-      // Admin zaten giriş yapmışsa direkt müşteriler sayfasına yönlendir
-      navigate("/customers", { replace: true });
-    }
+    if (isAdminLoggedIn()) navigate("/customers", { replace: true });
   }, [navigate]);
 
-  // YÖNLENDİRME GERÇEKLEŞMEDEN HEMEN ÖNCE BOŞ DÖN
-  if (isAdminLoggedIn()) {
-    return null;
-  }
+  if (isAdminLoggedIn()) return null;
 
-  // YÖNETİCİ GİRİŞ İŞLEMİ
   const onFinish = async (values) => {
     setLoading(true);
-    let errorMessage = "";
-
     try {
       await login(values.username, values.password);
-
-      message.success(
-        "Yönetici girişi başarılı! Müşteri sayfasına yönlendiriliyorsunuz..."
-      );
-
-      // Başarılı giriş sonrası yönlendirme
+      messageApi.success("Yönetici girişi başarılı! Yönlendiriliyorsunuz...");
       navigate("/customers", { replace: true });
     } catch (error) {
-      if (error.response && error.response.status === 401) {
-        errorMessage = "Kullanıcı adı veya şifre hatalı!";
-      } else if (error.response) {
-        errorMessage = `Sunucu Hatası (${error.response.status})`;
-      } else {
-        errorMessage = `Hata: ${error.message}`;
-      }
-      alert(errorMessage);
+      const errMsg =
+        error.response?.status === 401
+          ? "Kullanıcı adı veya şifre hatalı!"
+          : error.response
+          ? `Sunucu Hatası (${error.response.status})`
+          : `Hata: ${error.message}`;
+      messageApi.error(errMsg);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <PublicLayout>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          minHeight: "calc(100vh - 180px)",
-        }}
-      >
-        <Card
-          title={
-            <Title level={3} style={{ marginBottom: 0 }}>
-              Kuaför Yönetici Girişi
-            </Title>
-          }
-          style={{ width: 400 }}
+    <>
+      {contextHolder}
+      <PublicLayout>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            minHeight: "calc(100vh - 180px)",
+          }}
         >
-          <Form
-            name="admin_login_form"
-            initialValues={{ remember: true }}
-            onFinish={onFinish}
+          <Card
+            title={
+              <Title level={3} style={{ marginBottom: 0 }}>
+                Kuaför Yönetici Girişi
+              </Title>
+            }
+            style={{ width: 400 }}
           >
-            <Form.Item
-              name="username"
-              rules={[
-                { required: true, message: "Lütfen kullanıcı adınızı girin!" },
-              ]}
+            <Form
+              name="admin_login_form"
+              initialValues={{ remember: true }}
+              onFinish={onFinish}
             >
-              <Input
-                prefix={<UserOutlined />}
-                placeholder="Yönetici Kullanıcı Adı"
-              />
-            </Form.Item>
-
-            <Form.Item
-              name="password"
-              rules={[{ required: true, message: "Lütfen şifrenizi girin!" }]}
-            >
-              <Input
-                prefix={<LockOutlined />}
-                type="password"
-                placeholder="Yönetici Şifresi"
-              />
-            </Form.Item>
-
-            <Form.Item>
-              <Button type="primary" htmlType="submit" loading={loading} block>
-                Giriş Yap
-              </Button>
-            </Form.Item>
-          </Form>
-        </Card>
-      </div>
-    </PublicLayout>
+              <Form.Item
+                name="username"
+                rules={[
+                  {
+                    required: true,
+                    message: "Lütfen kullanıcı adınızı girin!",
+                  },
+                ]}
+              >
+                <Input
+                  prefix={<UserOutlined />}
+                  placeholder="Yönetici Kullanıcı Adı"
+                />
+              </Form.Item>
+              <Form.Item
+                name="password"
+                rules={[{ required: true, message: "Lütfen şifrenizi girin!" }]}
+              >
+                <Input
+                  prefix={<LockOutlined />}
+                  type="password"
+                  placeholder="Yönetici Şifresi"
+                />
+              </Form.Item>
+              <Form.Item>
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  loading={loading}
+                  block
+                >
+                  Giriş Yap
+                </Button>
+              </Form.Item>
+            </Form>
+          </Card>
+        </div>
+      </PublicLayout>
+    </>
   );
 };
 

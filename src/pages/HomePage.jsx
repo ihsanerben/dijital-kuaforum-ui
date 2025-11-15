@@ -1,34 +1,19 @@
-// src/pages/HomePage.jsx GÜNCELLEMİŞ KOD (Rastgele Görsel URL'leri Eklendi)
+// src/pages/HomePage.jsx - FİNAL VE EKSİKSİZ KOD
 
 import React from 'react';
 import { Typography, Row, Col, Card, Collapse } from 'antd';
-import { CalendarOutlined, SolutionOutlined, DollarOutlined, UserOutlined, SettingOutlined, BoxPlotOutlined, PlusOutlined } from '@ant-design/icons';
+import { UserOutlined, LockOutlined, MailOutlined, PhoneOutlined, PlusOutlined } from "@ant-design/icons";
 import PublicLayout from '../components/PublicLayout';
+
+// YEREL GÖRSEL IMPORTLARI (Lütfen yolların doğru olduğunu kontrol edin)
+import img1 from '../images/img1.png'; // Ana banner
+import img2 from '../images/img2.png'; // Özellik kartları ve SSS
+import img3 from '../images/img3.png'; // SSS görseli
 
 const { Title, Paragraph } = Typography;
 const { Panel } = Collapse;
 
-// Rastgele Kuaför Temalı Görsel URL'leri (Unsplash/Pexels tarzı placeholder'lar)
-const IMAGE_URLS = {
-    // Geniş Görsel
-    BARBER_BG: 'https://images.pexels.com/photos/1813247/pexels-photo-1813247.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1', 
-    // Randevu Sistemi
-    APPOINTMENT: 'https://images.pexels.com/photos/257858/pexels-photo-257858.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
-    // Müşteri Yönetimi (Genel Panel)
-    CRM: 'https://images.pexels.com/photos/4033324/pexels-photo-4033324.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
-    // Finans/Para
-    FINANCE: 'https://images.pexels.com/photos/3377405/pexels-photo-3377405.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
-    // Takvim/Personel
-    PERSONNEL: 'https://images.pexels.com/photos/3762804/pexels-photo-3762804.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
-    // Ürün/Stok
-    STOCK: 'https://images.pexels.com/photos/439227/pexels-photo-439227.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
-    // SSS (Berber Aletleri)
-    FAQ_IMAGE: 'https://images.pexels.com/photos/7988899/pexels-photo-7988899.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
-    // Genel Kuaför Aletleri
-    TOOLS: 'https://images.pexels.com/photos/5623063/pexels-photo-5623063.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'
-};
-
-// SSS verileri (Aynı kalır)
+// SSS verileri
 const faqData = [
   {
     header: 'Bu yazılım kimler için uygun?',
@@ -44,24 +29,16 @@ const faqData = [
   },
   {
     header: 'Kasa takibi yapılabiliyor mu?',
-    content: 'Evet, yönetici panelindeki İstatistik ve Raporlar sayfası (Aşama 2) günlük kazanç ve gider takibi için tasarlanacaktır.',
+    content: 'Evet, yönetici panelindeki İstatistik ve Raporlar sayfası (Aşama 4) günlük kazanç ve gider takibi için tasarlanacaktır.',
   },
 ];
 
-// Tekrarlanan görsel stilini tanımlayan yardımcı bileşen
-const ImagePlaceholder = ({ url, alt }) => (
-    <div 
-        style={{
-            height: '100%',
-            width: '100%',
-            backgroundImage: `url(${url})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            borderRadius: 8,
-            minHeight: '180px' // Kart kapakları için minimum yükseklik
-        }}
-        aria-label={alt}
-        role="img"
+// Yeni görsel render bileşeni
+const ImageContainer = ({ src, alt, height = '100%' }) => (
+    <img 
+        src={src} 
+        alt={alt} 
+        style={{ width: '100%', height: height, objectFit: 'cover', borderRadius: 8 }}
     />
 );
 
@@ -81,8 +58,10 @@ const HomePage = () => {
           </Paragraph>
         </Col>
         <Col xs={24} md={12}>
-          {/* GÖRSEL ALANI 1 */}
-          <ImagePlaceholder url={IMAGE_URLS.BARBER_BG} alt="Modern Kuaför Salonu" />
+          {/* GÖRSEL ALANI 1: img1.png */}
+          <div style={{ marginTop: 50, height: 550, width: '100%', background: '#f0f2f5', borderRadius: 8 }}>
+            <ImageContainer src={img1} alt="Modern Kuaför Salonu" height="550px" />
+          </div> 
         </Col>
       </Row>
 
@@ -94,76 +73,41 @@ const HomePage = () => {
 
       {/* 2. BLOK: Özellikler (6 Kart) */}
       <Row gutter={[32, 32]} style={{ marginBottom: 60 }}>
-        {/* Kart 1: Randevu Takip */}
+        
+        {/* Card 1: Randevu Takip */}
         <Col xs={24} sm={12} lg={8}>
-          <Card 
-            hoverable
-            cover={<ImagePlaceholder url={IMAGE_URLS.APPOINTMENT} alt="Randevu Takip Ekranı" />} 
-          >
-            <Card.Meta 
-              title="Randevu Takip Sistemi" 
-              description="Müşterilerinizin randevularını tek tıkla planlayın, iptal edin ya da yeniden düzenleyin."
-            />
+          <Card hoverable cover={<div style={{ height: 180, width: '100%' }}><ImageContainer src={img2} alt="Randevu Takip Ekranı" height="180px" /></div>}>
+            <Card.Meta title="Randevu Takip Sistemi" description="Müşterilerinizin randevularını tek tıkla planlayın, iptal edin ya da yeniden düzenleyin." />
           </Card>
         </Col>
-        {/* Kart 2: Müşteri Bilgi Yönetimi */}
+        {/* Card 2: Müşteri Bilgi Yönetimi */}
         <Col xs={24} sm={12} lg={8}>
-          <Card 
-            hoverable
-            cover={<ImagePlaceholder url={IMAGE_URLS.CRM} alt="Müşteri Bilgi Yönetimi Ekranı" />} 
-          >
-            <Card.Meta 
-              title="Müşteri Bilgi Yönetimi" 
-              description="Müşterilerinizi tanıyın, geçmiş, favorileri ve notlarıyla daha kişisel hizmet sunun."
-            />
+          <Card hoverable cover={<div style={{ height: 180, width: '100%' }}><ImageContainer src={img2} alt="Müşteri Bilgi Yönetimi Ekranı" height="180px" /></div>}>
+            <Card.Meta title="Müşteri Bilgi Yönetimi" description="Müşterilerinizi tanıyın, geçmiş, favorileri ve notlarıyla daha kişisel hizmet sunun." />
           </Card>
         </Col>
-        {/* Kart 3: Gelir-Gider Takibi */}
+        {/* Card 3: Gelir-Gider Takibi */}
         <Col xs={24} sm={12} lg={8}>
-          <Card 
-            hoverable
-            cover={<ImagePlaceholder url={IMAGE_URLS.FINANCE} alt="Para Çantası ve Hesap Makinesi" />} 
-          >
-            <Card.Meta 
-              title="Gelir-Gider Takibi" 
-              description="Günlük kazançları, giderleri ve kâr-zarar durumunu tek panelden takip edin."
-            />
+          <Card hoverable cover={<div style={{ height: 180, width: '100%' }}><ImageContainer src={img2} alt="Para Çantası ve Hesap Makinesi" height="180px" /></div>}>
+            <Card.Meta title="Gelir-Gider Takibi" description="Günlük kazançları, giderleri ve kâr-zarar durumunu tek panelden takip edin." />
           </Card>
         </Col>
-        {/* Kart 4: Personel Takibi */}
+        {/* Card 4: Personel Takibi */}
         <Col xs={24} sm={12} lg={8}>
-          <Card 
-            hoverable
-            cover={<ImagePlaceholder url={IMAGE_URLS.PERSONNEL} alt="Personel Takip Ekranı" />} 
-          >
-            <Card.Meta 
-              title="Personel Takibi" 
-              description="Vardiya, izin ve performans takibini kolayca yönetin."
-            />
+          <Card hoverable cover={<div style={{ height: 180, width: '100%' }}><ImageContainer src={img2} alt="Personel Takip Ekranı" height="180px" /></div>}>
+            <Card.Meta title="Personel Takibi" description="Vardiya, izin ve performans takibini kolayca yönetin." />
           </Card>
         </Col>
-        {/* Kart 5: Hizmet Listesi */}
+        {/* Card 5: Hizmet Listesi */}
         <Col xs={24} sm={12} lg={8}>
-          <Card 
-            hoverable
-            cover={<ImagePlaceholder url={IMAGE_URLS.TOOLS} alt="Kuaför Aletleri" />} 
-          >
-            <Card.Meta 
-              title="Hizmet Listesi ve Fiyatlandırma" 
-              description="Hizmetlerinizi tanımlayın, fiyatlarını kolayca yönetin."
-            />
+          <Card hoverable cover={<div style={{ height: 180, width: '100%' }}><ImageContainer src={img2} alt="Kuaför Aletleri" height="180px" /></div>}>
+            <Card.Meta title="Hizmet Listesi ve Fiyatlandırma" description="Hizmetlerinizi tanımlayın, fiyatlarını kolayca yönetin." />
           </Card>
         </Col>
-        {/* Kart 6: Ürün ve Stok */}
+        {/* Card 6: Ürün ve Stok */}
         <Col xs={24} sm={12} lg={8}>
-          <Card 
-            hoverable
-            cover={<ImagePlaceholder url={IMAGE_URLS.STOCK} alt="Şampuan ve Kozmetik Ürünler" />} 
-          >
-            <Card.Meta 
-              title="Ürün ve Stok Yönetimi" 
-              description="Bitmeden uyarılmalı, alarak stoklarınızı kontrol altında tutun."
-            />
+          <Card hoverable cover={<div style={{ height: 180, width: '100%' }}><ImageContainer src={img2} alt="Şampuan ve Kozmetik Ürünler" height="180px" /></div>}>
+            <Card.Meta title="Ürün ve Stok Yönetimi" description="Bitmeden uyarılmalı, alarak stoklarınızı kontrol altında tutun." />
           </Card>
         </Col>
       </Row>
@@ -191,9 +135,9 @@ const HomePage = () => {
             </Collapse>
           </Col>
           <Col xs={24} md={12} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <img src="https://dijitalkuafor.com/static/theme/img/forSss.webp" alt="" />
-            <div style={{ height: 400, width: '90%', borderRadius: 8 }}>
-                <ImagePlaceholder url={IMAGE_URLS.FAQ_IMAGE} alt="Tıraş Bıçağı ve Tarak" />
+            {/* GÖRSEL ALANI 3: img3.png */}
+            <div style={{ height: 600, width: '90%', borderRadius: 8 }}>
+              <ImageContainer src={img3} alt="SSS Görseli" height="600px" />
             </div>
           </Col>
         </Row>

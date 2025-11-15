@@ -1,5 +1,4 @@
-// src/pages/PublicCalendarPage.jsx - SON FİNAL VE HATASIZ KOD
-
+// src/pages/PublicCalendarPage.jsx
 import React, { useState, useEffect, useCallback } from "react";
 import {
   Typography,
@@ -7,25 +6,24 @@ import {
   Col,
   Table,
   Button,
-  message,
   Spin,
   Space,
-  DatePicker,
+  message,
 } from "antd";
 import { ArrowLeftOutlined, ArrowRightOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import moment from "moment";
-import "moment/locale/tr"; // Türkçe dil paketi
+import "moment/locale/tr";
 import PublicLayout from "../components/PublicLayout";
 import { getAppointmentsForCalendar } from "../api/appointmentService";
 import { isCustomerLoggedIn } from "../utils/storage";
 
 const { Title, Text } = Typography;
-moment.locale("tr"); // Dil ayarı yapıldı
+moment.locale("tr");
 
-const IS_BASLANGIC_SAATI = 9; // 09:00
-const IS_BITIS_SAATI = 18; // 18:00
-const TIME_STEP_MINUTES = 5; // 5 dakikalık dilim
+const IS_BASLANGIC_SAATI = 9;
+const IS_BITIS_SAATI = 18;
+const TIME_STEP_MINUTES = 5;
 
 const PublicCalendarPage = () => {
   const [currentWeekStart, setCurrentWeekStart] = useState(
@@ -36,9 +34,7 @@ const PublicCalendarPage = () => {
   const navigate = useNavigate();
   const loggedIn = isCustomerLoggedIn();
 
-  // --- YARDIMCI MANTIK VE VERİ ÇEKME ---
-
-  // 5 DAKİKALIK ZAMAN DİLİMİ OLUŞTURMA VE ÇAKIŞMA MANTIĞI
+  // --- 5 Dakikalık Dilim Üretimi ---
   const generateTimeSlots = (appointments, date) => {
     const slots = [];
     let currentTime = date
@@ -60,10 +56,8 @@ const PublicCalendarPage = () => {
         const appStart = moment(app.startTime);
         const appEnd = moment(app.endTime);
 
-        const isSameDay = appStart.isSame(date, "day");
-
         if (
-          isSameDay &&
+          appStart.isSame(date, "day") &&
           slotStart.isBefore(appEnd) &&
           slotEnd.isAfter(appStart)
         ) {
@@ -73,22 +67,17 @@ const PublicCalendarPage = () => {
         }
       });
 
-      // Eğer slot dolu/bloklu ise
       if (!isSlotAvailable && blockingAppointmentEnd) {
         const formattedSlot = slotStart.format("HH:mm");
-
         slots.push({
           key: formattedSlot,
           time: formattedSlot,
-          // BEKLEMEDE ve ONAYLANDI statülerini ayrı ayrı yolla
           status: blockingStatus,
         });
-
         currentTime = blockingAppointmentEnd;
         continue;
       }
 
-      // Müsait dilimi ekle
       slots.push({
         key: slotStart.format("HH:mm"),
         time: slotStart.format("HH:mm"),
@@ -102,16 +91,15 @@ const PublicCalendarPage = () => {
     return slots;
   };
 
+  // --- Haftalık Veriyi Çek ---
   const fetchWeeklyAppointments = useCallback(async (weekStart) => {
     setLoading(true);
-    const weekDates = [];
     const newWeeklySchedule = {};
 
-    for (let i = 0; i < 7; i++) {
-      weekDates.push(weekStart.clone().add(i, "days"));
-    }
-
     try {
+      const weekDates = Array.from({ length: 7 }, (_, i) =>
+        weekStart.clone().add(i, "days")
+      );
       const fetchPromises = weekDates.map(async (date) => {
         const dateString = date.format("YYYY-MM-DD");
         const response = await getAppointmentsForCalendar(dateString);
@@ -129,8 +117,8 @@ const PublicCalendarPage = () => {
       await Promise.all(fetchPromises);
       setWeeklySchedule(newWeeklySchedule);
     } catch (error) {
-      message.error("Haftalık takvim verileri yüklenemedi.");
       console.error("Haftalık Takvim Hatası:", error);
+      message.error("Haftalık takvim verileri yüklenemedi!");
       setWeeklySchedule({});
     } finally {
       setLoading(false);
@@ -141,15 +129,11 @@ const PublicCalendarPage = () => {
     fetchWeeklyAppointments(currentWeekStart);
   }, [currentWeekStart, fetchWeeklyAppointments]);
 
-  // --- NAVİGASYON VE RENDER İŞLEMLERİ ---
-
-  const handlePreviousWeek = () => {
+  // --- Navigasyon ---
+  const handlePreviousWeek = () =>
     setCurrentWeekStart(currentWeekStart.clone().subtract(7, "days"));
-  };
-
-  const handleNextWeek = () => {
+  const handleNextWeek = () =>
     setCurrentWeekStart(currentWeekStart.clone().add(7, "days"));
-  };
 
   const handleRandevuAl = (dateIso) => {
     if (loggedIn) {
@@ -160,15 +144,13 @@ const PublicCalendarPage = () => {
     }
   };
 
+  // --- Table Veri ve Kolonları ---
   const getRowData = () => {
     const refDate = currentWeekStart.format("YYYY-MM-DD");
     const refSchedule = weeklySchedule[refDate] || [];
 
     return refSchedule.map((slot) => {
-      const row = {
-        key: slot.time,
-        time: <Text strong>{slot.time}</Text>,
-      };
+      const row = { key: slot.time, time: <Text strong>{slot.time}</Text> };
 
       for (let i = 0; i < 7; i++) {
         const currentDate = currentWeekStart
@@ -177,14 +159,9 @@ const PublicCalendarPage = () => {
           .format("YYYY-MM-DD");
         const daySchedule = weeklySchedule[currentDate] || [];
         const currentSlot = daySchedule.find((s) => s.time === slot.time);
-
-        if (currentSlot) {
-          row[currentDate] = currentSlot;
-        } else {
-          // Kapalı slotları DOLU olarak işaretle
-          row[currentDate] = { status: "DOLU" };
-        }
+        row[currentDate] = currentSlot || { status: "DOLU" };
       }
+
       return row;
     });
   };
@@ -221,9 +198,8 @@ const PublicCalendarPage = () => {
           const isAvailable = slot.status === "MÜSAİT";
           const isPending = slot.status === "BEKLEMEDE";
           const isBooked =
-            slot.status === "ONAYLANDI" || slot.status === "DOLU"; // DOLU ve ONAYLANDI aynı renk
-
-          const color = isBooked ? "red" : isPending ? "orange" : "gray"; // Renk ataması
+            slot.status === "ONAYLANDI" || slot.status === "DOLU";
+          const color = isBooked ? "red" : isPending ? "orange" : "gray";
 
           return isAvailable ? (
             <Button
@@ -237,13 +213,13 @@ const PublicCalendarPage = () => {
             </Button>
           ) : (
             <Text style={{ color: color, fontWeight: "bold" }}>
-              {isBooked ? "DOLU" : isPending ? "BEKLEMEDE" : ""}{" "}
-              {/* Statü Metin Ataması */}
+              {isBooked ? "DOLU" : isPending ? "BEKLEMEDE" : ""}
             </Text>
           );
         },
       });
     }
+
     return columns;
   };
 
