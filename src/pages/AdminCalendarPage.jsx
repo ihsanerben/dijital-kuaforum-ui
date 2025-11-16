@@ -133,13 +133,25 @@ const AdminCalendarPage = () => {
             sorter: (a, b) => STATUS_ORDER[a.status] - STATUS_ORDER[b.status],
             render: text => <Text strong style={{ color: getStatusColor(text) }}>{text}</Text> 
         },
+    { 
+            title: 'İşlemler', key: 'action',
+            width: 150,
+            render: (_, record) => (
+                <Space size="middle">
+                    {record.status === 'BEKLEMEDE' && <>
+                        <Button icon={<CheckCircleOutlined />} type="primary" size="small" onClick={() => handleStatusUpdate(record.id, 'ONAYLANDI')}>Onayla</Button>
+                        <Button icon={<CloseCircleOutlined />} type="danger" size="small" onClick={() => handleStatusUpdate(record.id, 'REDDEDİLDİ')}>Reddet</Button>
+                    </>}
+                    {(record.status === 'ONAYLANDI' || record.status === 'REDDEDİLDİ') && <Text type="secondary">İşlem Tamamlandı</Text>}
+                </Space>
+            )
+        }
     ];
 
     return (
         <>
             {contextHolder}
             <Title style={{margin: 0}} level={1}>Randevu Yönetimi Paneli</Title>
-             
             
             <Row justify="end" style={{ marginBottom: 20 }}>
                 <Search

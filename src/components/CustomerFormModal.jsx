@@ -51,6 +51,7 @@ const CustomerFormModal = ({ visible, onClose, onSubmit, customer }) => {
 
     return (
         <Modal
+        style={{height: 520, width: 520 }}
             title={isEditing ? 'Müşteri Düzenle' : 'Yeni Müşteri Ekle'}
             open={visible}
             onCancel={onClose}

@@ -53,7 +53,6 @@ const UserAuthPage = () => {
           backendMessage ||
           "Giriş işlemi sırasında beklenmeyen bir hata oluştu.";
       }
-
       console.error("LOGIN HATA:", error.response?.data);
       messageApi.error(userMessage);
     } finally {
