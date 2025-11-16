@@ -34,7 +34,7 @@ const AppointmentPage = () => {
     if (!startTimeIso) {
       setTimeout(() => {
         navigate("/calendar", { replace: true });
-      }, 1000); 
+      }, 1000);
       return;
     }
 
@@ -81,22 +81,31 @@ const AppointmentPage = () => {
 
       messageApi.success({
         content: (
-          <div>
-            <Text strong>Randevu talebiniz başarıyla alındı!</Text>
-            <p style={{ marginTop: 5 }}>
-              Başlangıç: {moment(startTimeIso).format("HH:mm")}, Süre:{" "}
-              {totalDuration} dk.
-            </p>
-            <Text type="secondary">
-              Kuaför onayı bekleniyor. Onaylandığında bilgilendirileceksiniz.
-            </Text>
-          </div>
-        ),
-        duration: 5,
-      });
+                    <div>
+                        <Text strong style={{ fontSize: '15px' }}>Randevu talebiniz başarıyla alındı!</Text>
+                        
+                        <p style={{ margin: '5px 0 2px 0' }}>
+                            <Text strong style={{ color: '#0050b3' }}>
+                                {moment(startTimeIso).format('dddd HH:mm')}
+                            </Text>
+                            <Text type="secondary"> ({totalDuration} dk)</Text>
+                        </p>
+                        
+                        <Text type="secondary" style={{ display: 'block', fontSize: '12px' }}>
+                            {/* Tarihi Alt Satırda, Sönük Göster */}
+                            Tarih: {moment(startTimeIso).format('DD/MM/YYYY')}
+                        </Text>
+
+                        <Text type="secondary" style={{ display: 'block', marginTop: 5 }}>
+                            Kuaför onayı bekleniyor. Onaylandığında bilgi alacaksınız.
+                        </Text>
+                    </div>
+                ),
+                duration: 5, 
+            });
       setTimeout(() => {
         navigate("/calendar", { replace: true });
-      }, 1000);
+      }, 5000);
     } catch (error) {
       if (error.response?.status === 409) {
         messageApi.error(
@@ -158,35 +167,35 @@ const AppointmentPage = () => {
       );
 
     return (
-        <Spin spinning={loading || isSubmitting}>
-          <Form
-            form={form}
-            name="appointment_form"
-            onFinish={onFinish}
-            layout="vertical"
-            initialValues={{ hizmetIdleri: [] }}
+      <Spin spinning={loading || isSubmitting}>
+        <Form
+          form={form}
+          name="appointment_form"
+          onFinish={onFinish}
+          layout="vertical"
+          initialValues={{ hizmetIdleri: [] }}
+        >
+          <Form.Item
+            name="hizmetIdleri"
+            label={<Title level={5}>Almak İstediğiniz Hizmetler</Title>}
+            rules={[{ required: true, message: "En az bir hizmet seçiniz." }]}
           >
-            <Form.Item
-              name="hizmetIdleri"
-              label={<Title level={5}>Almak İstediğiniz Hizmetler</Title>}
-              rules={[{ required: true, message: "En az bir hizmet seçiniz." }]}
+            <Checkbox.Group options={hizmetler} />
+          </Form.Item>
+          <Form.Item>
+            <Button
+              type="primary"
+              htmlType="submit"
+              size="large"
+              block
+              loading={isSubmitting}
             >
-              <Checkbox.Group options={hizmetler} />
-            </Form.Item>
-            <Form.Item>
-              <Button
-                type="primary"
-                htmlType="submit"
-                size="large"
-                block
-                loading={isSubmitting}
-              >
-                Randevu Talebini Gönder (
-                {totalDuration > 0 ? totalDuration + " dk" : ""})
-              </Button>
-            </Form.Item>
-          </Form>
-        </Spin>
+              Randevu Talebini Gönder (
+              {totalDuration > 0 ? totalDuration + " dk" : ""})
+            </Button>
+          </Form.Item>
+        </Form>
+      </Spin>
     );
   };
 

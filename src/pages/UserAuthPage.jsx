@@ -1,5 +1,5 @@
 // src/pages/UserAuthPage.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Form, Input, Button, Card, Typography, Tabs, message } from "antd";
 import {
@@ -23,14 +23,6 @@ const UserAuthPage = () => {
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("login");
 
-  // useEffect(() => {
-  //   if (isCustomerLoggedIn()) {
-  //     setTimeout(() => {
-  //       navigate("/appointment", { replace: true });
-  //     }, 1000); 
-  //   }
-  // }, [messageApi]);
-
   // --- Giriş İşlemi ---
   const onLoginFinish = async (values) => {
     setLoading(true);
@@ -43,7 +35,7 @@ const UserAuthPage = () => {
       );
       setTimeout(() => {
         navigate("/appointment", { replace: true });
-      }, 1000); 
+      }, 1500); 
     } catch (error) {
       const backendMessage = error.response?.data?.messageApi;
       let userMessage;
@@ -78,7 +70,9 @@ const UserAuthPage = () => {
       messageApi.success(
         "İşlem başarılı! Giriş yapıldı ve randevu sayfasına yönlendiriliyorsunuz."
       );
-      navigate("/appointment", { replace: true });
+      setTimeout(() => {
+        navigate("/appointment", { replace: true });
+      }, 1500); 
     } catch (error) {
       const backendMessage =
         error.response?.data || "Kayıt işlemi başarısız oldu.";
