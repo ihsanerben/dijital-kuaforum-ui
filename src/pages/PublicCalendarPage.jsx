@@ -21,9 +21,9 @@ import { isCustomerLoggedIn } from "../utils/storage";
 const { Title, Text } = Typography;
 moment.locale("tr");
 
-const IS_BASLANGIC_SAATI = 9;
-const IS_BITIS_SAATI = 18;
-const TIME_STEP_MINUTES = 5;
+const IS_BASLANGIC_SAATI = 9; // 09:00
+const IS_BITIS_SAATI = 19;   // 19:00
+const TIME_STEP_MINUTES = 10; // 👈 Burası 10 dakika olarak güncellendi!
 
 const PublicCalendarPage = () => {
     const [messageApi, contextHolder] = message.useMessage();
@@ -215,7 +215,7 @@ const PublicCalendarPage = () => {
               className="randevu-al-btn"
               style={{ opacity: 0.3, transition: "opacity 0.3s" }}
             >
-              Randevu Al
+              Randevu Al 
             </Button>
           ) : (
             <Text style={{ color: color, fontWeight: "bold" }}>

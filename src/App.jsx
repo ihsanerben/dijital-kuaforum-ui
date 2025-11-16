@@ -17,6 +17,7 @@ import ServicesPage from "./pages/ServicesPage";
 import ContactPage from "./pages/ContactPage";
 import AppointmentPage from "./pages/AppointmentPage";
 import PublicCalendarPage from "./pages/PublicCalendarPage";
+import HizmetCRUDPage from './pages/HizmetCRUDPage'; // YENİ IMPORT
 
 function App() {
   return (
@@ -43,6 +44,7 @@ function App() {
             <Route path="/adminCalendar" element={<AdminCalendarPage />} />
             <Route path="/customers" element={<CustomerCRUDPage />} />
             <Route path="/statistics" element={<StatisticsPage />} />
+            <Route path="/hizmetler" element={<HizmetCRUDPage />} />
           </Route>
         </Route>
       </Routes>
