@@ -24,7 +24,7 @@ const menuItems = [
   {
     key: '/statistics',
     icon: <PieChartOutlined />,
-    label: 'İstatistik ve Raporlar',
+    label: 'İstatistik & Raporlar',
   },
 ];
 

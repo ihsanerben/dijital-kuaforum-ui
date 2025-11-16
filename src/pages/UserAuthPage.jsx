@@ -37,7 +37,9 @@ const UserAuthPage = () => {
         navigate("/appointment", { replace: true });
       }, 1500); 
     } catch (error) {
-      const backendMessage = error.response?.data?.messageApi;
+      console.log(error);
+      
+      const backendMessage = error.response?.data?.message;
       let userMessage;
 
       if (backendMessage && backendMessage.includes("Kullanıcı bulunamadı")) {
