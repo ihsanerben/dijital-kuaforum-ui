@@ -1,72 +1,40 @@
 import http from "./http";
-import { getAuthData } from "../utils/storage";
+import { getAdminAuthData } from "../utils/storage";
 
-const CUSTOMERS_ENDPOINT = "/customers";
+const BASE_URL = "/customers";
 
+// Admin yetkilendirme başlıklarını ekleyen yardımcı fonksiyon
 const getAuthHeaders = () => {
-  const { username, password } = getAuthData();
-  if (!username || !password) {
-    throw new Error("Giriş bilgileri eksik.");
-  }
-  return { Username: username, Password: password };
+  const { username, password } = getAdminAuthData();
+  if (!username || !password) return {};
+  return {
+    Username: username,
+    Password: password,
+  };
 };
 
+// --- READ (Tüm müşteriler) ---
 export const getCustomers = async () => {
-  try {
-    const headers = getAuthHeaders();
-
-    const response = await http.get(`${CUSTOMERS_ENDPOINT}/getAllCustomers`, {
-      headers: headers,
-    });
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
+  const headers = getAuthHeaders();
+  return http.get(`${BASE_URL}/getAllCustomers`, { headers });
 };
 
-export const createCustomer = async (customer) => {
-  try {
-    const { username, password } = getAuthData();
-
-    const requestBody = {
-      username: username,
-      password: password,
-      customer: customer,
-    };
-
-    const response = await http.post(`${CUSTOMERS_ENDPOINT}/createCustomer`, requestBody);
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
+// --- CREATE (Yeni müşteri) ---
+export const createCustomer = async (customerData) => {
+  const { username, password } = getAdminAuthData();
+  const securedRequest = { username, password, customer: customerData };
+  const headers = getAuthHeaders();
+  return http.post(`${BASE_URL}/createCustomer`, securedRequest, { headers });
 };
 
-export const updateCustomer = async (id, updatedCustomer) => {
-  try {
-    const headers = getAuthHeaders();
-
-    const response = await http.put(
-      `/customers/updateCustomer/${id}`,
-      updatedCustomer,
-      {
-        headers: headers,
-      }
-    );
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
+// --- UPDATE (Müşteri Güncelle) ---
+export const updateCustomer = async (id, updatedCustomerData) => {
+  const headers = getAuthHeaders();
+  return http.put(`${BASE_URL}/updateCustomer/${id}`, updatedCustomerData, { headers });
 };
 
+// --- DELETE (Müşteri Sil) ---
 export const deleteCustomer = async (id) => {
-  try {
-    const headers = getAuthHeaders();
-
-    const response = await http.delete(`${CUSTOMERS_ENDPOINT}/deleteCustomer/${id}`, {
-      headers: headers,
-    });
-    return response;
-  } catch (error) {
-    throw error;
-  }
+  const headers = getAuthHeaders();
+  return http.delete(`${BASE_URL}/deleteCustomer/${id}`, { headers });
 };

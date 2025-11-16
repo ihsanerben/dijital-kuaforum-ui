@@ -1,54 +1,50 @@
 // src/App.jsx
-
-import React from 'react';
+import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
-// Sayfa Importları
-import LoginPage from "./pages/LoginPage";
+// importlar...
+import AdminLoginPage from "./pages/AdminLoginPage";
+import UserAuthPage from "./pages/UserAuthPage";
 import CustomerCRUDPage from "./pages/CustomerCRUDPage";
-import ProtectedRoute from "./components/ProtectedRoute";
-
-// YENİ/GÜNCELLENMİŞ SAYFA IMPORTLARI
-import HomePage from './pages/HomePage';
-import AboutPage from './pages/AboutPage';
-import PriceListPage from './pages/PriceListPage';
-import ServicesPage from './pages/ServicesPage';
+import AdminCalendarPage from "./pages/AdminCalendarPage";
 import StatisticsPage from "./pages/StatisticsPage";
-// YENİ: İLETİŞİM SAYFASI
-import ContactPage from './pages/ContactPage'; 
-
+import ProtectedRoute from "./components/ProtectedRoute";
+import DashboardLayout from "./components/DashboardLayout";
+import HomePage from "./pages/HomePage";
+import AboutPage from "./pages/AboutPage";
+import PriceListPage from "./pages/PriceListPage";
+import ServicesPage from "./pages/ServicesPage";
+import ContactPage from "./pages/ContactPage";
+import AppointmentPage from "./pages/AppointmentPage";
+import PublicCalendarPage from "./pages/PublicCalendarPage";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        
-        {/* --- Public (Açık) Rotalar --- */}
+        {/* Public */}
         <Route path="/" element={<HomePage />} />
-        <Route path="/login" element={<LoginPage />} />
+        <Route path="/userAuth" element={<UserAuthPage />} />
+        <Route path="/calendar" element={<PublicCalendarPage />} />
+        <Route path="/appointment" element={<AppointmentPage />} />
+        <Route path="/adminGiris" element={<AdminLoginPage />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/prices" element={<PriceListPage />} />
         <Route path="/services" element={<ServicesPage />} />
-        <Route path="/contact" element={<ContactPage />} /> {/* YENİ ROTA */}
+        <Route path="/contact" element={<ContactPage />} />
 
-        {/* --- Korumalı Rotalar (Giriş Yapılması Gerekir) --- */}
-        
-        {/* Müşteri Yönetim Sayfası */}
-        <Route path="/customers" element={
-          <ProtectedRoute>
-            <CustomerCRUDPage />
-          </ProtectedRoute>
-        } />
-        
-        {/* Raporlar ve İstatistik */}
-        <Route path="/statistics" element={
-          <ProtectedRoute>
-            <StatisticsPage />
-          </ProtectedRoute>
-        } />
-        
-        {/* Giriş yapıldıktan sonra varsayılan olarak /customers'a yönlendir */}
-        
+        {/* Protected */}
+        <Route element={<ProtectedRoute />}>
+          <Route element={<DashboardLayout />}>
+            <Route
+              path="/admin"
+              element={<Navigate to="/adminCalendar" replace />}
+            />
+            <Route path="/adminCalendar" element={<AdminCalendarPage />} />
+            <Route path="/customers" element={<CustomerCRUDPage />} />
+            <Route path="/statistics" element={<StatisticsPage />} />
+          </Route>
+        </Route>
       </Routes>
     </BrowserRouter>
   );

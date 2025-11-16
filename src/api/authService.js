@@ -1,5 +1,8 @@
+// src/api/authService.js - GÜNCEL VE HATASIZ
+
 import http from "./http";
-import { saveAuthData, clearAuthData } from "../utils/storage";
+// YENİ VE DOĞRU ADMIN FONKSİYONLARI IMPORT EDİLDİ
+import { saveAdminAuthData, clearAdminAuthData } from "../utils/storage"; 
 
 const AUTH_LOGIN_ENDPOINT = "/auth";
 
@@ -23,14 +26,17 @@ export const login = async (username, password) => {
       `Login Response: ID=${barberId}, Username=${barberName}, Message=${barberMessage}, Status=${barberStatus}`
     );
 
-    saveAuthData(username, password);
+    // Yeni admin fonksiyonu çağrıldı
+    saveAdminAuthData(username, password);
 
     return response;
   } catch (error) {
-    console.log(error.response.data);
+    console.log("HATA --- ADMIN ICIN", error.response.data);
+    throw error;
   }
 };
 
 export const logout = () => {
-  clearAuthData();
+  // Yeni admin fonksiyonu çağrıldı
+  clearAdminAuthData();
 };

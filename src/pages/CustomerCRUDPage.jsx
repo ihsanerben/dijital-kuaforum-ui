@@ -1,252 +1,141 @@
-import React, { useState, useEffect, useCallback } from "react";
-import {
-  Layout,
-  Typography,
-  Button,
-  Table,
-  message,
-  Space,
-  Popconfirm,
-  Modal,
-  Form,
-  Input,
-} from "antd";
-import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
-import { logout } from "../api/authService";
+// src/pages/CustomerCRUDPage.jsx - FİNAL VE EKSİKSİZ KOD
 
-import {
-  getCustomers,
-  createCustomer,
-  updateCustomer,
-  deleteCustomer,
-} from "../api/customerService";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect, useCallback } from 'react';
+import { Table, Button, Space, Typography, Input, App, Popconfirm, Row } from 'antd';
+import { EditOutlined, DeleteOutlined, UserAddOutlined, SearchOutlined } from '@ant-design/icons';
+import { getCustomers, deleteCustomer } from '../api/customerService'; 
+import CustomerFormModal from '../components/CustomerFormModal'; // Form bileşeni import edildi
 
-const { Header, Content } = Layout;
 const { Title } = Typography;
+const { Search } = Input;
 
 const CustomerCRUDPage = () => {
-  const navigate = useNavigate();
+    // 👈 Ant Design message servisine güvenli erişim
+    const { message } = App.useApp(); 
+    
+    const [customers, setCustomers] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [modalVisible, setModalVisible] = useState(false);
+    const [editingCustomer, setEditingCustomer] = useState(null); 
+    const [searchText, setSearchText] = useState(''); 
 
-  const [customers, setCustomers] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [editingCustomer, setEditingCustomer] = useState(null); // Düzenlenen müşteri (null ise ekleme)
-  const [form] = Form.useForm(); // Ant Design Form yönetimi için
+    const fetchCustomers = useCallback(async () => {
+        setLoading(true);
+        try {
+            const response = await getCustomers();
+            const sortedData = (response.data || []).sort((a, b) => b.id - a.id);
+            setCustomers(sortedData);
+        } catch (error) {
+            message.error('Müşteri listesi yüklenemedi. Yetki/sunucu hatası.');
+            console.error('Müşteri Çekme Hatası:', error);
+        } finally {
+            setLoading(false);
+        }
+    }, [message]);
 
-  // Müşterileri Backend'den Çekme Fonksiyonu
-  const fetchCustomers = useCallback(async () => {
-    setLoading(true);
-    try {
-      const data = await getCustomers();
-      setCustomers(data);
-    } catch (error) {
-      message.error(
-        "Müşteri listesi çekilirken hata oluştu. Lütfen girişinizi kontrol edin."
-      );
-      console.error("Fetch Customer Error:", error);
-      if (error.response && error.response.status === 401) {
-        logout();
-        navigate("/login");
-      }
-    } finally {
-      setLoading(false);
-    }
-  }, [navigate]);
+    useEffect(() => {
+        fetchCustomers();
+    }, [fetchCustomers]);
 
-  useEffect(() => {
-    fetchCustomers();
-  }, [fetchCustomers]);
+    const handleSearchChange = (e) => {
+        setSearchText(e.target.value.toLowerCase());
+    };
 
-  const handleLogout = () => {
-    logout();
-    message.success("Başarıyla çıkış yapıldı.");
-    navigate("/login");
-  };
+    const handleDelete = async (id) => {
+        try {
+            await deleteCustomer(id);
+            message.success('Müşteri başarıyla silindi.');
+            fetchCustomers();
+        } catch (error) {
+            message.error('Müşteri silinirken hata oluştu.');
+        }
+    };
 
-  const onFinish = async (values) => {
-    setLoading(true);
-    try {
-      if (editingCustomer) {
-        await updateCustomer(editingCustomer.id, values);
-        message.success("Müşteri başarıyla güncellendi.");
-      } else {
-        await createCustomer(values);
-        message.success("Yeni müşteri başarıyla eklendi.");
-      }
-      setIsModalVisible(false);
-      fetchCustomers();
-      form.resetFields();
-    } catch (error) {
-      let errorMessage = "İşlem sırasında beklenmeyen bir hata oluştu.";
-      if (
-        error.response &&
-        error.response.data &&
-        error.response.data.message
-      ) {
-        errorMessage = error.response.data.message;
-      } else if (error.message) {
-        errorMessage = error.message;
-      }
-      message.error(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  };
+    const filteredCustomers = customers.filter(customer => {
+        if (!searchText) return true;
+        const searchTarget = `${customer.fullName || ''} ${customer.phoneNumber || ''} ${customer.email || ''}`.toLowerCase();
+        return searchTarget.includes(searchText);
+    });
 
-  const handleDelete = async (id) => {
-    try {
-      await deleteCustomer(id);
-      message.success("Müşteri başarıyla silindi.");
-      fetchCustomers();
-    } catch (error) {
-      message.error("Müşteri silinirken hata oluştu.");
-      console.error("Delete Customer Error:", error);
-    }
-  };
+    const handleModalClose = () => {
+        setModalVisible(false);
+        setEditingCustomer(null);
+    };
 
-  const showModal = (customer = null) => {
-    setEditingCustomer(customer);
-    setIsModalVisible(true);
-    form.setFieldsValue(customer || { name: "", phone: "", email: "" });
-  };
+    const handleModalOpen = (customer) => {
+        setEditingCustomer(customer);
+        setModalVisible(true);
+    };
 
-  const columns = [
-    // NOT: dataIndex alanları, Spring Boot'taki Customer modelinizle birebir aynı olmalıdır.
-    { title: "ID", dataIndex: "id", key: "id", width: 80 },
-    { title: "Tam Adı", dataIndex: "fullName", key: "fullName" },
-    { title: "Telefon", dataIndex: "phoneNumber", key: "phoneNumber" },
-    { title: "Email", dataIndex: "email", key: "email" },
-    {
-      title: "İşlemler",
-      key: "actions",
-      width: 200,
-      render: (_, record) => (
-        <Space size="middle">
-          <Button icon={<EditOutlined />} onClick={() => showModal(record)}>
-            Düzenle
-          </Button>
-          <Popconfirm
-            title="Bu müşteriyi silmek istediğinizden emin misiniz?"
-            onConfirm={() => handleDelete(record.id)}
-            okText="Evet"
-            cancelText="Hayır"
-          >
-            <Button danger icon={<DeleteOutlined />}>
-              Sil
-            </Button>
-          </Popconfirm>
-        </Space>
-      ),
-    },
-  ];
+    const columns = [
+        { title: 'ID', dataIndex: 'id', key: 'id', width: 80, sorter: (a, b) => a.id - b.id, defaultSortOrder: 'descend' },
+        { title: 'Tam Adı', dataIndex: 'fullName', key: 'fullName', sorter: (a, b) => (a.fullName || '').localeCompare(b.fullName || '', 'tr', { sensitivity: 'base' }) },
+        { title: 'Telefon', dataIndex: 'phoneNumber', key: 'phoneNumber' },
+        { title: 'Email', dataIndex: 'email', key: 'email' },
+        {
+            title: 'İşlemler',
+            key: 'actions',
+            width: 150,
+            render: (_, record) => (
+                <Space size="middle">
+                    <Button icon={<EditOutlined />} size="small" onClick={() => handleModalOpen(record)}>
+                        Düzenle
+                    </Button>
+                    <Popconfirm
+                        title="Emin misiniz?"
+                        onConfirm={() => handleDelete(record.id)}
+                        okText="Evet"
+                        cancelText="Hayır"
+                    >
+                        <Button icon={<DeleteOutlined />} size="small" danger>
+                            Sil
+                        </Button>
+                    </Popconfirm>
+                </Space>
+            ),
+        },
+    ];
 
-  return (
-    <Layout style={{ minHeight: "100vh" }}>
-      <Header
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          background: "#fff",
-          padding: "0 24px",
-        }}
-      >
-        <Title level={4} style={{ margin: 0 }}>
-          Müşteri Yönetim Paneli
-        </Title>
-        <Space>
-          <Button
-            type="primary"
-            onClick={() => showModal(null)}
-            icon={<PlusOutlined />}
-          >
-            Yeni Müşteri Ekle
-          </Button>
-          <Button danger onClick={handleLogout}>
-            Çıkış Yap
-          </Button>
-        </Space>
-      </Header>
-      <Content style={{ padding: "24px" }}>
-        <div style={{ background: "#fff", padding: 24, minHeight: 280 }}>
-          <Title level={5}>Müşteri Listesi</Title>
+    return (
+        // Layout temizlendi, sadece içeriği döndürüyoruz
+        <>
+            <Title style={{margin: 0}} level={1}>Müşteri Yönetim Paneli</Title>
+            
+            <Row justify="end" style={{ marginBottom: 20 }}>
+                <Space>
+                    <Search
+                        placeholder="İsme, telefona veya e-postaya göre ara"
+                        allowClear
+                        onChange={handleSearchChange}
+                        style={{ width: 420, marginRight: 10 }}
+                    />
+                    <Button 
+                        type="primary" 
+                        icon={<UserAddOutlined />}
+                        onClick={() => handleModalOpen(null)}
+                        style={{ height: 40, width: 220 }}
+                    >
+                        Yeni Müşteri Ekle
+                    </Button>
+                </Space>
+            </Row>
 
-          {/* Müşteri Listesi Tablosu */}
-          <Table
-            columns={columns}
-            dataSource={customers}
-            rowKey="id"
-            loading={loading}
-            pagination={{ pageSize: 10 }}
-          />
-        </div>
-      </Content>
-
-      {/* Ekleme/Güncelleme Modal'ı */}
-      <Modal
-        title={editingCustomer ? "Müşteri Düzenle" : "Yeni Müşteri Ekle"}
-        open={isModalVisible}
-        onCancel={() => {
-          setIsModalVisible(false);
-          form.resetFields();
-        }}
-        footer={null}
-      >
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={onFinish}
-          // Düzenleme sırasında initialValues, showModal içinde set ediliyor.
-        >
-          <Form.Item
-            name="fullName"
-            label="Ad Soyad"
-            rules={[
-              { required: true, message: "Lütfen müşterinin adını giriniz!" },
-            ]}
-          >
-            <Input />
-          </Form.Item>
-
-          <Form.Item
-            name="phoneNumber"
-            label="Telefon Numarası"
-            rules={[
-              { required: true, message: "Lütfen telefon numarasını giriniz!" },
-            ]}
-          >
-            <Input />
-          </Form.Item>
-
-          <Form.Item
-            name="email"
-            label="E-posta"
-            rules={[
-              { type: "email", message: "Geçerli bir e-posta adresi giriniz!" },
-            ]}
-          >
-            <Input />
-          </Form.Item>
-
-          <Form.Item style={{ textAlign: "right", marginTop: 20 }}>
-            <Button
-              style={{ marginRight: 8 }}
-              onClick={() => {
-                setIsModalVisible(false);
-                form.resetFields();
-              }}
-            >
-              İptal
-            </Button>
-            <Button type="primary" htmlType="submit" loading={loading}>
-              {editingCustomer ? "Güncelle" : "Kaydet"}
-            </Button>
-          </Form.Item>
-        </Form>
-      </Modal>
-    </Layout>
-  );
+            <Table 
+                columns={columns} 
+                dataSource={filteredCustomers} 
+                loading={loading}
+                rowKey="id"
+                pagination={{ pageSize: 10 }}
+            />
+            
+            <CustomerFormModal
+                visible={modalVisible}
+                onClose={handleModalClose}
+                onSubmit={fetchCustomers} 
+                customer={editingCustomer}
+            />
+        </>
+    );
 };
 
 export default CustomerCRUDPage;

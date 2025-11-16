@@ -1,16 +1,20 @@
-import React from 'react';
-import { Layout, Typography } from 'antd';
+// src/pages/StatisticsPage.jsx - TEMİZLENMİŞ HAL
 
-const { Content } = Layout;
-const { Title } = Typography;
+import React from 'react';
+import { Typography, Empty } from 'antd';
+// DashboardLayout importu SİLİNDİ
+
+const { Title, Text } = Typography;
 
 const StatisticsPage = () => {
-  return (
-    <Content style={{ padding: '24px', minHeight: 280 }}>
-      <Title level={2}>İstatistik ve Satış Raporları</Title>
-      <p>Bu sayfa, randevu ve satış verilerine dayalı istatistikleri (Aşama 2'de) gösterecektir.</p>
-    </Content>
-  );
+    return (
+        // DashboardLayout'suz sadece içeriği döndürüyoruz
+        <>
+            <Title level={2}>İstatistik ve Satış Raporları</Title>
+            <Text>Bu sayfa, randevu ve satış verilerine dayalı istatistikleri (Aşama 4'te) gösterecektir.</Text>
+            <Empty description="Veri bekleniyor..." style={{ marginTop: 50 }} />
+        </>
+    );
 };
 
 export default StatisticsPage;
