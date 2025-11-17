@@ -18,6 +18,8 @@ import ContactPage from "./pages/ContactPage";
 import AppointmentPage from "./pages/AppointmentPage";
 import PublicCalendarPage from "./pages/PublicCalendarPage";
 import HizmetCRUDPage from './pages/HizmetCRUDPage'; // YENİ IMPORT
+import UrunCRUDPage from "./pages/UrunCRUDPage";
+import CustomerStatsPage from "./pages/CustomerStatsPage";
 
 function App() {
   return (
@@ -44,7 +46,9 @@ function App() {
             <Route path="/adminCalendar" element={<AdminCalendarPage />} />
             <Route path="/customers" element={<CustomerCRUDPage />} />
             <Route path="/statistics" element={<StatisticsPage />} />
+            <Route path="/customerStats/:id" element={<CustomerStatsPage />} />
             <Route path="/hizmetler" element={<HizmetCRUDPage />} />
+            <Route path="/urunler" element={<UrunCRUDPage />} />
           </Route>
         </Route>
       </Routes>
