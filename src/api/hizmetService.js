@@ -38,3 +38,9 @@ export const deleteHizmet = async (id) => {
     // DELETE /api/hizmetler/delete/{id}
     return http.delete(`${BASE_URL}/delete/${id}`, { headers });
 };
+
+// Tüm hizmetleri Admin yetkisiyle çeken metot.
+export const getAllHizmetlerAdmin = async () => {
+    const headers = getAdminHeaders(); 
+    return http.get(`${BASE_URL}/admin/getAll`, { headers }); 
+};

@@ -1,8 +1,9 @@
 // src/pages/CustomerCRUDPage.jsx - FİNAL VE EKSİKSİZ KOD
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom'; // useNavigate import edildi
 import { Table, Button, Space, Typography, Input, App, Popconfirm, Row } from 'antd';
-import { EditOutlined, DeleteOutlined, UserAddOutlined, SearchOutlined } from '@ant-design/icons';
+import { EditOutlined, DeleteOutlined, UserAddOutlined, LineChartOutlined } from '@ant-design/icons'; // İkon import edildi
 import { getCustomers, deleteCustomer } from '../api/customerService'; 
 import CustomerFormModal from '../components/CustomerFormModal'; // Form bileşeni import edildi
 
@@ -10,8 +11,8 @@ const { Title } = Typography;
 const { Search } = Input;
 
 const CustomerCRUDPage = () => {
-    // 👈 Ant Design message servisine güvenli erişim
     const { message } = App.useApp(); 
+    const navigate = useNavigate(); // useNavigate hook'u kullanıldı
     
     const [customers, setCustomers] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -67,6 +68,8 @@ const CustomerCRUDPage = () => {
         setModalVisible(true);
     };
 
+    
+
     const columns = [
         { title: 'ID', dataIndex: 'id', key: 'id', width: 80, sorter: (a, b) => a.id - b.id, defaultSortOrder: 'descend' },
         { title: 'Tam Adı', dataIndex: 'fullName', key: 'fullName', sorter: (a, b) => (a.fullName || '').localeCompare(b.fullName || '', 'tr', { sensitivity: 'base' }) },
@@ -75,9 +78,12 @@ const CustomerCRUDPage = () => {
         {
             title: 'İşlemler',
             key: 'actions',
-            width: 150,
+            width: 240, // Genişlik artırıldı
             render: (_, record) => (
-                <Space size="middle">
+                <Space size="small">
+                    <Button size="small" onClick={() => navigate(`/customerStats/${record.id}`)}>
+                        İstatistik
+                    </Button>
                     <Button icon={<EditOutlined />} size="small" onClick={() => handleModalOpen(record)}>
                         Düzenle
                     </Button>

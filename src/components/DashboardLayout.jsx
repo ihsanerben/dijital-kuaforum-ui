@@ -8,8 +8,9 @@ import {
   PieChartOutlined,
   LogoutOutlined,
   TagOutlined,
+  ShoppingOutlined,
 } from "@ant-design/icons"; // TagOutlined import edildi
-import { useNavigate, useLocation, Outlet } from 'react-router-dom'; // Outlet import edildi
+import { useNavigate, useLocation, Outlet } from "react-router-dom"; // Outlet import edildi
 import { clearAdminAuthData } from "../utils/storage";
 
 const { Header, Content, Sider } = Layout;
@@ -36,7 +37,11 @@ const menuItems = [
     key: "/statistics",
     icon: <PieChartOutlined />,
     label: "İstatistik & Raporlar",
-  },
+  },{
+    key: "/urunler",
+    icon: <ShoppingOutlined />,
+    label: "Ürünler CRUD",
+  }
 ];
 
 // children prop'u kaldırıldı

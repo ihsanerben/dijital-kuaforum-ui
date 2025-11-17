@@ -38,3 +38,14 @@ export const deleteCustomer = async (id) => {
   const headers = getAuthHeaders();
   return http.delete(`${BASE_URL}/deleteCustomer/${id}`, { headers });
 };
+
+// YENİ METOT: Müşteri adına göre arama
+export const searchCustomers = async (fullName) => {
+    // Admin yetkilendirmesi gereklidir
+    const headers = getAuthHeaders(); 
+    // Backend'de /api/customers/search?fullName=... endpoint'i olmalı
+    return http.get(`/search`, { 
+        headers, 
+        params: { fullName } 
+    });
+};
