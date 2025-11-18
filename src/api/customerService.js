@@ -40,12 +40,12 @@ export const deleteCustomer = async (id) => {
 };
 
 // YENİ METOT: Müşteri adına göre arama
-export const searchCustomers = async (fullName) => {
+export const searchCustomers = async (query) => {
     // Admin yetkilendirmesi gereklidir
     const headers = getAuthHeaders(); 
-    // Backend'de /api/customers/search?fullName=... endpoint'i olmalı
-    return http.get(`/search`, { 
+    // Backend'de /api/customers/search?name=... endpoint'i olmalı
+    return http.get(`${BASE_URL}/search`, { 
         headers, 
-        params: { fullName } 
-    });
+        params: { fullName: query } 
+    });        
 };

@@ -42,7 +42,7 @@ const QuickAppointmentModal = ({ isVisible, onClose, onAppointmentCreated }) => 
             const response = await getAllHizmetlerAdmin();
             setAllServices(response.data);
         } catch (err) {
-            setError('Hizmetler yüklenirken bir hata oluştu.');
+            setError('Hizmetler yüklenirken bir hata oluştu Statistics.');
         }
     }, []);
 
@@ -91,7 +91,7 @@ const QuickAppointmentModal = ({ isVisible, onClose, onAppointmentCreated }) => 
             // Customer objesinin yapısını varsayarak sonuçları set et
             setSearchResults(response.data || []); 
         } catch (err) {
-            setError('Müşteri arama hatası.');
+            setError('Müşteri arama hatası Statistics.');
             setSearchResults([]);
         } finally {
             setFetchingCustomers(false);
