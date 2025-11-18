@@ -42,5 +42,5 @@ export const deleteHizmet = async (id) => {
 // Tüm hizmetleri Admin yetkisiyle çeken metot.
 export const getAllHizmetlerAdmin = async () => {
     const headers = getAdminHeaders(); 
-    return http.get(`${BASE_URL}/admin/getAll`, { headers }); 
+    return http.get(`${BASE_URL}/public/getAll`, { headers }); 
 };

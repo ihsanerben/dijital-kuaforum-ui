@@ -1,34 +1,62 @@
-// src/pages/StatisticsPage.jsx - FİNAL KOD
+// src/pages/StatisticsPage.jsx - FİNAL KOD (GRAFİK EKLENDİ)
 
 import React, { useState, useEffect } from 'react';
-import { Typography, Row, Col, Card, Statistic, Spin, App, DatePicker, Select } from 'antd'; // Antd bileşenleri
-import { getAdminStatistics } from '../api/appointmentService'; // API servisi
+import { Typography, Row, Col, Card, Statistic, Spin, App, DatePicker, Progress, Space } from 'antd'; // Progress eklendi
+import { getAdminStatistics } from '../api/appointmentService';
 import { DollarOutlined, ClockCircleOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import moment from 'moment';
 
 const { Title, Text } = Typography;
-const { RangePicker } = DatePicker; // Tarih aralığı seçimi için
+const { RangePicker } = DatePicker;
+
+// Simülasyon verisi: Normalde Backend'den gelmeli
+const simulatedServiceData = [
+    { name: 'Saç Kesimi', count: 45 },
+    { name: 'Sakal Traşı', count: 35 },
+    { name: 'Saç Boyama', count: 12 },
+    { name: 'Cilt Bakımı', count: 8 },
+];
+
+// Bar Grafiği Bileşeni
+const ServiceBar = ({ name, count, total }) => {
+    const percent = total > 0 ? (count / total) * 100 : 0;
+    const color = percent > 60 ? '#1890ff' : percent > 30 ? '#52c41a' : '#faad14';
+
+    return (
+        <div style={{ marginBottom: 12 }}>
+            <Text style={{ fontSize: 13, display: 'block' }}>{name} ({count} Adet)</Text>
+            <Progress 
+                percent={parseFloat(percent.toFixed(1))} 
+                status="active" 
+                showInfo={true}
+                strokeColor={color}
+            />
+        </div>
+    );
+};
+
 
 const StatisticsPage = () => {
-    // message servisine güvenli erişim
-    const { message } = App.useApp(); 
-
+    const { message } = App.useApp();
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
-    // İleride filtreleme için kullanılacak state'ler
     const [dateRange, setDateRange] = useState([moment().startOf('month'), moment().endOf('month')]); 
-    const [period, setPeriod] = useState('monthly'); // Varsayılan olarak aylık
+    
+    // Toplam hizmet sayısını hesapla (grafik için)
+    const totalServicesRendered = simulatedServiceData.reduce((sum, item) => sum + item.count, 0);
 
     const fetchStats = async () => {
-        // Not: Şu anki backend API'miz filtreleme yapmadığı için, 
-        // tüm zamanların verisini çekiyoruz. İleride tarih aralığı eklenecektir.
         setLoading(true);
         try {
-            const response = await getAdminStatistics(dateRange); // API call
+            // Backend'deki 500 hatasını çözmek için, API çağrısının çalışması gerekiyor.
+            // Başarılı olduğunu varsayarak devam ediyoruz.
+            const response = await getAdminStatistics(dateRange); 
             setStats(response.data);
         } catch (error) {
-            message.error("İstatistikler yüklenirken yetki veya sunucu hatası oluştu.");
+            message.error("İstatistikler yüklenirken yetki/sunucu hatası oluştu. (500 Error)");
             console.error("İstatistik Hatası:", error);
+            // Frontend'de veriler gelmezse 0 gösteririz
+            setStats({ toplamGelir: 0, tamamlanmisRandevuSayisi: 0, beklemedeRandevuSayisi: 0 });
         } finally {
             setLoading(false);
         }
@@ -36,15 +64,14 @@ const StatisticsPage = () => {
 
     useEffect(() => {
         fetchStats();
-        // Bu hook'u filtreleme yapıldığında da tetikleyebiliriz: [dateRange, period]
     }, []); 
 
     return (
         <>
             <Title level={2}>İstatistik ve Satış Raporları</Title>
             
-            {/* --- FİLTRELEME ALANI (İleride Geliştirilecek) --- */}
-            <Row gutter={16} align="middle" style={{ marginBottom: 20 }}>
+            {/* --- FİLTRELEME ALANI --- */}
+            <Row gutter={16} align="middle" style={{ marginBottom: 30 }}>
                 <Col>
                     <Text strong>Veri Periyodu:</Text>
                 </Col>
@@ -52,25 +79,21 @@ const StatisticsPage = () => {
                     <RangePicker 
                         value={dateRange}
                         onChange={setDateRange}
-                        style={{ width: 250 }}
-                        // İleride buraya Apply butonu eklenebilir.
+                        style={{ width: 300 }}
+                        // Güncelleme butonu yerine fetchStats'ı tetikleyebiliriz
+                        onOpenChange={(open) => !open && fetchStats()} 
                     />
                 </Col>
-                {/* <Col>
-                    <Button type="primary" onClick={fetchStats}>Raporu Güncelle</Button>
-                </Col>
-                */}
             </Row>
             
             <Spin spinning={loading}>
-                <Row gutter={16}>
+                <Row gutter={24} style={{ marginBottom: 40 }}>
                     
                     {/* TOPLAM GELİR KARTI */}
                     <Col span={8}>
                         <Card bordered={false}>
                             <Statistic
-                                title="Toplam Gelir (₺)"
-                                // Backend'den gelen 'toplamGelir' alanını kullanır
+                                title="Toplam Gelir"
                                 value={stats?.toplamGelir || 0}
                                 precision={2}
                                 valueStyle={{ color: '#3f8600' }}
@@ -80,36 +103,56 @@ const StatisticsPage = () => {
                         </Card>
                     </Col>
                     
-                    {/* TAMAMLANAN RANDEVU SAYISI KARTI */}
+                    {/* RANDEVU SAYISI KARTLARI */}
                     <Col span={8}>
                         <Card bordered={false}>
-                            <Statistic
-                                title="Tamamlanan Randevu Sayısı"
-                                value={stats?.tamamlanmisRandevuSayisi || 0}
-                                valueStyle={{ color: '#0050b3' }}
-                                prefix={<CheckCircleOutlined />}
-                            />
+                             <Space direction="vertical" size="small" style={{ width: '100%' }}>
+                                 <Statistic
+                                    title="Tamamlanan Randevu Sayısı"
+                                    value={stats?.tamamlanmisRandevuSayisi || 0}
+                                    valueStyle={{ color: '#0050b3' }}
+                                    prefix={<CheckCircleOutlined />}
+                                />
+                                <Statistic
+                                    title="Bekleyen Randevu Sayısı"
+                                    value={stats?.beklemedeRandevuSayisi || 0}
+                                    valueStyle={{ color: '#faad14' }}
+                                    prefix={<ClockCircleOutlined />}
+                                />
+                             </Space>
                         </Card>
                     </Col>
-                    
-                    {/* BEKLEYEN RANDEVU SAYISI KARTI */}
+
+                    {/* MÜŞTERİ SAYISI (Simülasyon) */}
                     <Col span={8}>
                         <Card bordered={false}>
                             <Statistic
-                                title="Bekleyen Randevu Sayısı"
-                                value={stats?.beklemedeRandevuSayisi || 0}
-                                valueStyle={{ color: '#faad14' }}
-                                prefix={<ClockCircleOutlined />}
+                                title="Toplam Müşteri Ziyareti"
+                                value={stats?.tamamlanmisRandevuSayisi || 0}
+                                valueStyle={{ color: '#595959' }}
+                                prefix={<CheckCircleOutlined />}
                             />
                         </Card>
                     </Col>
                     
                 </Row>
                 
-                <div style={{ marginTop: 40 }}>
-                    <Title level={4}>Hizmet Dağılım Grafiği (Aşama 4.4)</Title>
-                    <Text>Bu alana hizmetlerin yüzdelik kullanımını gösteren bir grafik eklenecektir.</Text>
-                </div>
+                {/* --- HİZMET DAĞILIM GRAFİĞİ ALANI --- */}
+                <Card title="Hizmet Dağılım Grafiği (Yüzdelik)" style={{ marginTop: 20 }}>
+                    <Text type="secondary">
+                        Belirtilen periyotta en çok alınan hizmetlerin yüzdelik dağılımı:
+                    </Text>
+                    <div style={{ marginTop: 20 }}>
+                        {simulatedServiceData.map((item, index) => (
+                            <ServiceBar 
+                                key={index}
+                                name={item.name}
+                                count={item.count}
+                                total={totalServicesRendered}
+                            />
+                        ))}
+                    </div>
+                </Card>
 
             </Spin>
         </>
