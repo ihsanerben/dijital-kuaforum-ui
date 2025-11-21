@@ -105,7 +105,7 @@ const AppointmentPage = () => {
             });
       setTimeout(() => {
         navigate("/calendar", { replace: true });
-      }, 5000);
+      }, 3000);
     } catch (error) {
       if (error.response?.status === 409) {
         messageApi.error(

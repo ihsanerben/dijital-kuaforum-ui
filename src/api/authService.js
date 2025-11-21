@@ -1,4 +1,4 @@
-// src/api/authService.js - GÜNCEL VE HATASIZ
+// admin login islemi burda yapiliyor
 
 import http from "./http";
 // YENİ VE DOĞRU ADMIN FONKSİYONLARI IMPORT EDİLDİ

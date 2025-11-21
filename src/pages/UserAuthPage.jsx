@@ -98,7 +98,7 @@ const UserAuthPage = () => {
         <Input
           addonBefore="+90"
           prefix={<PhoneOutlined />}
-          placeholder="5321234567"
+          placeholder="555 555 5555"
           maxLength={10}
         />
       </Form.Item>
@@ -153,7 +153,7 @@ const UserAuthPage = () => {
         <Input
           addonBefore="+90"
           prefix={<PhoneOutlined />}
-          placeholder="5321234567"
+          placeholder="555 555 5555"
           maxLength={10}
         />
       </Form.Item>

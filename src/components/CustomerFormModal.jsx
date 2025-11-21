@@ -10,7 +10,6 @@ const { Text } = Typography;
 const CustomerFormModal = ({ visible, onClose, onSubmit, customer }) => {
     const [form] = Form.useForm();
     const isEditing = !!customer;
-    // App.useApp() hook'unu kullanıyoruz
     const { message } = App.useApp(); 
 
     React.useEffect(() => {
