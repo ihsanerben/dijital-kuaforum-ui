@@ -46,7 +46,6 @@ const ImageContainer = ({ src, alt, height = '100%' }) => (
 const HomePage = () => {
   return (
     <PublicLayout>
-      
       {/* 1. BLOK: Genel Tanıtım ve Görsel */}
       <Row gutter={48} align="middle" style={{ marginBottom: 60 }}>
         <Col xs={24} md={12}>

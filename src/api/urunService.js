@@ -54,7 +54,3 @@ export const deleteUrun = async (id) => {
         throw error;
     }
 };
-
-// Bu servis dosyasının AdminLayout'taki Admin Side Bar'da kullanılabilmesi için
-// src/components/AdminSidebar.jsx dosyanıza bir menü ögesi eklemeyi unutmayın:
-// { key: 'urunler', icon: <ShoppingOutlined />, label: 'Ürünler' }

@@ -5,7 +5,7 @@ import { Layout, Menu, theme, Button, Row, Col, Typography, Divider, Space } fro
 // YENİ İKONLAR İÇİN IMPORT EKLENDİ
 import { LoginOutlined, CalendarOutlined, InstagramOutlined, LinkedinFilled,LogoutOutlined, GithubOutlined, GlobalOutlined, CodeOutlined, ArrowRightOutlined, PhoneOutlined, MailOutlined, HomeOutlined } from '@ant-design/icons'; 
 import { useNavigate, useLocation } from 'react-router-dom';
-import { isCustomerLoggedIn, clearCustomerAuthData } from '../utils/storage'; 
+import { isCustomerLoggedIn } from '../utils/storage'; 
 import { logoutCustomer } from '../api/customerAuthService'; 
 
 // Logo görseli import edildi (Varsayılıyor)
@@ -33,7 +33,7 @@ const publicMenuItems = [
 ];
 
 const PublicLayout = ({ children }) => {
-// ... (Diğer fonksiyonlar aynı kalır) ...
+
   const navigate = useNavigate();
   const location = useLocation();
   const loggedIn = isCustomerLoggedIn();
@@ -129,7 +129,7 @@ const PublicLayout = ({ children }) => {
               <MailOutlined style={{ marginRight: 8, color: '#695acb' }} /> ihsanerben@gmail.com
             </Paragraph>
             <Paragraph style={{ color: '#595959' }}>
-              <PhoneOutlined style={{ marginRight: 8, color: '#695acb' }} /> 0571 638 1453
+              <PhoneOutlined style={{ marginRight: 8, color: '#695acb' }} /> +90 541 730 8616
             </Paragraph>
           </Col>
         </Row>
@@ -144,8 +144,8 @@ const PublicLayout = ({ children }) => {
                 </Paragraph>
             </Col>
             <Col>
-                <Link href="#" style={{ color: '#8c8c8c', marginRight: 15 }}>Kullanım Şartları</Link>
-                <Link href="#" style={{ color: '#8c8c8c', marginRight: 15 }}>Gizlilik Politikası</Link>
+                <Link href="/about" style={{ color: '#8c8c8c', marginRight: 15 }}>Kullanım Şartları</Link>
+                <Link href="/about" style={{ color: '#8c8c8c', marginRight: 15 }}>Gizlilik Politikası</Link>
                 <Link href="/contact" style={{ color: '#8c8c8c' }}>İletişim</Link>
             </Col>
         </Row>
