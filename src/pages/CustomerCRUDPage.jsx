@@ -1,23 +1,29 @@
-// src/pages/CustomerCRUDPage.jsx - FİNAL VE EKSİKSİZ KOD
+// src/pages/CustomerCRUDPage.jsx (Mevcut dosyanızı bununla güncelleyin)
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom'; // useNavigate import edildi
 import { Table, Button, Space, Typography, Input, App, Popconfirm, Row } from 'antd';
-import { EditOutlined, DeleteOutlined, UserAddOutlined, LineChartOutlined } from '@ant-design/icons'; // İkon import edildi
+import { EditOutlined, DeleteOutlined, UserAddOutlined, BarChartOutlined } from '@ant-design/icons'; // BarChartOutlined eklendi
 import { getCustomers, deleteCustomer } from '../api/customerService'; 
-import CustomerFormModal from '../components/CustomerFormModal'; // Form bileşeni import edildi
+import CustomerFormModal from '../components/CustomerFormModal';
+import CustomerStatsModal from '../components/CustomerStatsModal'; // 👈 Modal Import Edildi
 
 const { Title } = Typography;
 const { Search } = Input;
 
 const CustomerCRUDPage = () => {
-    const { message } = App.useApp(); 
-    const navigate = useNavigate(); // useNavigate hook'u kullanıldı
+    const { message } = App.useApp();
     
     const [customers, setCustomers] = useState([]);
     const [loading, setLoading] = useState(false);
+    
+    // Form Modalı State'leri
     const [modalVisible, setModalVisible] = useState(false);
     const [editingCustomer, setEditingCustomer] = useState(null); 
+    
+    // İstatistik Modalı State'leri
+    const [statsModalVisible, setStatsModalVisible] = useState(false);
+    const [selectedCustomerId, setSelectedCustomerId] = useState(null);
+
     const [searchText, setSearchText] = useState(''); 
 
     const fetchCustomers = useCallback(async () => {
@@ -27,75 +33,62 @@ const CustomerCRUDPage = () => {
             const sortedData = (response.data || []).sort((a, b) => b.id - a.id);
             setCustomers(sortedData);
         } catch (error) {
-            message.error('Müşteri listesi yüklenemedi. Yetki/sunucu hatası.');
-            console.error('Müşteri Çekme Hatası:', error);
+            message.error('Müşteri listesi yüklenemedi.');
         } finally {
             setLoading(false);
         }
     }, [message]);
 
-    useEffect(() => {
-        fetchCustomers();
-    }, [fetchCustomers]);
+    useEffect(() => { fetchCustomers(); }, [fetchCustomers]);
 
-    const handleSearchChange = (e) => {
-        setSearchText(e.target.value.toLowerCase());
-    };
+    const handleSearchChange = (e) => { setSearchText(e.target.value.toLowerCase()); };
 
     const handleDelete = async (id) => {
         try {
             await deleteCustomer(id);
-            message.success('Müşteri başarıyla silindi.');
+            message.success('Müşteri silindi.');
             fetchCustomers();
         } catch (error) {
-            message.error('Müşteri silinirken hata oluştu.');
+            message.error('Silme hatası.');
         }
+    };
+
+    const handleStatsOpen = (id) => {
+        setSelectedCustomerId(id);
+        setStatsModalVisible(true);
     };
 
     const filteredCustomers = customers.filter(customer => {
         if (!searchText) return true;
-        const searchTarget = `${customer.fullName || ''} ${customer.phoneNumber || ''} ${customer.email || ''}`.toLowerCase();
+        const searchTarget = `${customer.fullName || ''} ${customer.phoneNumber || ''}`.toLowerCase();
         return searchTarget.includes(searchText);
     });
 
-    const handleModalClose = () => {
-        setModalVisible(false);
-        setEditingCustomer(null);
-    };
-
-    const handleModalOpen = (customer) => {
-        setEditingCustomer(customer);
-        setModalVisible(true);
-    };
-
-    
-
     const columns = [
-        { title: 'ID', dataIndex: 'id', key: 'id', width: 80, sorter: (a, b) => a.id - b.id, defaultSortOrder: 'descend' },
-        { title: 'Tam Adı', dataIndex: 'fullName', key: 'fullName', sorter: (a, b) => (a.fullName || '').localeCompare(b.fullName || '', 'tr', { sensitivity: 'base' }) },
-        { title: 'Telefon', dataIndex: 'phoneNumber', key: 'phoneNumber' },
-        { title: 'Email', dataIndex: 'email', key: 'email' },
+        { title: 'ID', dataIndex: 'id', width: 50 },
+        { title: 'Tam Adı', dataIndex: 'fullName' },
+        { title: 'Telefon', dataIndex: 'phoneNumber' },
         {
             title: 'İşlemler',
             key: 'actions',
-            width: 240, // Genişlik artırıldı
+            width: 250,
             render: (_, record) => (
                 <Space size="small">
-                    <Button size="small" onClick={() => navigate(`/customerStats/${record.id}`)}>
+                    {/* İSTATİSTİK BUTONU */}
+                    <Button 
+                        icon={<BarChartOutlined />} 
+                        size="small" 
+                        onClick={() => handleStatsOpen(record.id)}
+                    >
                         İstatistik
                     </Button>
-                    <Button icon={<EditOutlined />} size="small" onClick={() => handleModalOpen(record)}>
+
+                    <Button icon={<EditOutlined />} size="small" onClick={() => { setEditingCustomer(record); setModalVisible(true); }}>
                         Düzenle
                     </Button>
-                    <Popconfirm
-                        title="Emin misiniz?"
-                        onConfirm={() => handleDelete(record.id)}
-                        okText="Evet"
-                        cancelText="Hayır"
-                    >
-                        <Button icon={<DeleteOutlined />} size="small" danger>
-                            Sil
-                        </Button>
+                    
+                    <Popconfirm title="Sil?" onConfirm={() => handleDelete(record.id)}>
+                        <Button icon={<DeleteOutlined />} size="small" danger>Sil</Button>
                     </Popconfirm>
                 </Space>
             ),
@@ -103,42 +96,32 @@ const CustomerCRUDPage = () => {
     ];
 
     return (
-        // Layout temizlendi, sadece içeriği döndürüyoruz
         <>
-            <Title style={{margin: 0}} level={1}>Müşteri Yönetim Paneli</Title>
-            
+            <Title level={2}>Müşteri Yönetim Paneli</Title>
             <Row justify="end" style={{ marginBottom: 20 }}>
                 <Space>
-                    <Search
-                        placeholder="İsme, telefona veya e-postaya göre ara"
-                        allowClear
-                        onChange={handleSearchChange}
-                        style={{ width: 420, marginRight: 10 }}
-                    />
-                    <Button 
-                        type="primary" 
-                        icon={<UserAddOutlined />}
-                        onClick={() => handleModalOpen(null)}
-                        style={{ height: 40, width: 220 }}
-                    >
-                        Yeni Müşteri Ekle
+                    <Search placeholder="Ara..." onChange={handleSearchChange} style={{ width: 300 }} />
+                    <Button type="primary" icon={<UserAddOutlined />} onClick={() => { setEditingCustomer(null); setModalVisible(true); }}>
+                        Yeni Müşteri
                     </Button>
                 </Space>
             </Row>
 
-            <Table 
-                columns={columns} 
-                dataSource={filteredCustomers} 
-                loading={loading}
-                rowKey="id"
-                pagination={{ pageSize: 10 }}
-            />
+            <Table columns={columns} dataSource={filteredCustomers} rowKey="id" loading={loading} />
             
-            <CustomerFormModal
-                visible={modalVisible}
-                onClose={handleModalClose}
+            {/* Ekleme/Düzenleme Modalı */}
+            <CustomerFormModal 
+                visible={modalVisible} 
+                onClose={() => setModalVisible(false)} 
                 onSubmit={fetchCustomers} 
-                customer={editingCustomer}
+                customer={editingCustomer} 
+            />
+
+            {/* İstatistik Modalı */}
+            <CustomerStatsModal
+                visible={statsModalVisible}
+                onClose={() => setStatsModalVisible(false)}
+                customerId={selectedCustomerId}
             />
         </>
     );
