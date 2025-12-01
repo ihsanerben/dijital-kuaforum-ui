@@ -55,7 +55,7 @@ const QuickAppointmentModal = ({
 
   // --- Veri Çekme İşlevleri ---
 
-  // Hizmetleri yükle
+  // Hizmetleri yükle KARDESSSSS
   const fetchServices = useCallback(async () => {
     try {
       const response = await getAllHizmetlerAdmin();
