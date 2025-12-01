@@ -165,8 +165,8 @@ const QuickAppointmentModal = ({
         // debugger;
         try {
             await createAppointmentAdmin(appointmentData);
-            message.success(`Randevu, ${selectedCustomer.fullName} için başarıyla oluşturuldu ve ONAYLANDI.`);
-            onAppointmentCreated(`Randevu, ${selectedCustomer.fullName} için başarıyla oluşturuldu ve ONAYLANDI.`); 
+            message.success(`Randevu, ${selectedCustomer.fullName} için başarıyla oluşturuldu.`);
+            onAppointmentCreated(`Randevu, ${selectedCustomer.fullName} için başarıyla oluşturuldu.`); 
             handleReset();
             onClose();
         } catch (err) {
