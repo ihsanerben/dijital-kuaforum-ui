@@ -37,7 +37,7 @@ function App() {
         <Route path="/services" element={<ServicesPage />} />
         <Route path="/contact" element={<ContactPage />} />
 
-        {/* Protected */}
+        {/* Protected Bolgeler */}
         <Route element={<ProtectedRoute />}>
           <Route element={<DashboardLayout />}>
             <Route
