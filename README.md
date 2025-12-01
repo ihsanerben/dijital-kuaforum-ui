@@ -1,16 +1,66 @@
-# React + Vite
+# ✂️ Dijital Kuaförüm - Web Arayüzü (Frontend)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Bu proje, modern kuaför ve güzellik salonları için geliştirilmiş kapsamlı bir **Randevu ve Salon Yönetim Sisteminin** kullanıcı arayüzüdür. Müşteriler için kolay randevu alma imkanı sunarken, işletme sahipleri için detaylı bir yönetim paneli sağlar.
 
-Currently, two official plugins are available:
+## 🚀 Proje Hakkında
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Dijital Kuaförüm, React ve Ant Design kullanılarak geliştirilmiştir. Kullanıcı deneyimini (UX) ön planda tutan, responsive ve hızlı bir yapıya sahiptir. Sistem iki ana modülden oluşur:
+1. **Müşteri Arayüzü:** Hizmetleri inceleme, takvim üzerinden müsaitlik kontrolü ve randevu oluşturma.
+2. **Yönetici (Admin) Paneli:** Randevu yönetimi, müşteri takibi, hizmet/ürün düzenleme ve finansal istatistikler.
 
-## React Compiler
+## ✨ Özellikler
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### 👤 Müşteri Paneli (Public)
+* **Dinamik Randevu Takvimi:** Haftalık görünümde 10'ar dakikalık slotlar halinde kuaförün müsaitliğini görüntüleme.
+* **Hızlı Randevu Alma:** Hizmet seçimi ve anlık müsaitlik kontrolü ile saniyeler içinde randevu talebi.
+* **Giriş/Kayıt Sistemi:** Telefon numarası (+90 formatlı) ile güvenli kayıt ve giriş.
+* **Bilgilendirme Sayfaları:** Hizmetlerimiz, Fiyat Listesi, Hakkımızda ve İletişim (Google Maps entegreli).
 
-## Expanding the ESLint configuration
+### 🛡️ Yönetici Paneli (Admin Dashboard)
+* **Gelişmiş Randevu Yönetimi:**
+    * Gelen randevu taleplerini onaylama, reddetme veya iptal etme.
+    * Yönetici takvimi üzerinden hızlı randevu oluşturma (Modal ile).
+    * Çakışma kontrolü (Double-booking prevention).
+* **Müşteri Yönetimi (CRM):**
+    * Müşteri ekleme, düzenleme, silme ve geçmiş randevularını görüntüleme.
+    * İsim, telefon veya e-posta ile canlı arama (Live Search).
+* **Hizmet ve Ürün Yönetimi:**
+    * Verilen hizmetlerin sürelerini ve fiyatlarını dinamik olarak ayarlama.
+    * Salon içi ürün satışı ve stok takibi.
+* **İstatistik ve Raporlama:**
+    * Günlük/Aylık ciro takibi.
+    * Tamamlanan ve bekleyen randevu sayıları.
+    * En çok tercih edilen hizmetlerin grafiksel dağılımı (Pie Chart).
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## 🛠️ Teknolojiler
+
+* **Framework:** [React](https://reactjs.org/) + [Vite](https://vitejs.dev/)
+* **UI Kütüphanesi:** [Ant Design (Antd)](https://ant.design/)
+* **HTTP İstekleri:** Axios
+* **Tarih/Saat Yönetimi:** Moment.js
+* **Routing:** React Router Dom v6
+
+## 📸 Ekran Görüntüleri
+
+*(Buraya projenin ekran görüntülerini -Ana Sayfa, Takvim, Admin Paneli- ekleyebilirsiniz)*
+
+## ⚙️ Kurulum
+
+Projeyi yerel ortamınızda çalıştırmak için:
+
+1.  Repoyu klonlayın:
+    ```bash
+    git clone [https://github.com/kullaniciadiniz/dijital-kuaforum-ui.git](https://github.com/kullaniciadiniz/dijital-kuaforum-ui.git)
+    ```
+2.  Proje dizinine gidin ve bağımlılıkları yükleyin:
+    ```bash
+    cd dijital-kuaforum-ui
+    npm install
+    ```
+3.  Uygulamayı başlatın:
+    ```bash
+    npm run dev
+    ```
+
+---
+**Geliştirici:** İhsan Eren Erben
