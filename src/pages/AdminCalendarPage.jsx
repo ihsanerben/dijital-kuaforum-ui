@@ -1,10 +1,10 @@
-// src/pages/AdminCalendarPage.jsx - FINAL CODE (WORKING ADMIN PANEL)
+// src/pages/AdminCalendarPage.jsx - FİNAL KOD
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Typography, Table, Button, Spin, Space, message, Input, Row, Col, App } from 'antd'; 
+import { Typography, Table, Button, Spin, Space, message, Input, Row, Col, App, Popconfirm } from 'antd'; 
 import moment from 'moment';
 import 'moment/locale/tr';
-import { CheckCircleOutlined, CloseCircleOutlined, SearchOutlined, PlusOutlined } from '@ant-design/icons';
+import { CheckCircleOutlined, CloseCircleOutlined, SearchOutlined, PlusOutlined, EditOutlined } from '@ant-design/icons';
 import { getAllAppointmentsAdmin, updateAppointmentStatus } from '../api/appointmentService';
 import QuickAppointmentModal from '../components/QuickAppointmentModal'; 
 
@@ -12,8 +12,7 @@ const { Title, Text } = Typography;
 const { Search } = Input;
 moment.locale('tr'); 
 
-// Defines the priority order for status sorting (BEKLEMEDE should come first)
-const STATUS_ORDER = { 'BEKLEMEDE': 1, 'ONAYLANDI': 2, 'REDDEDİLDİ': 3 };
+const STATUS_ORDER = { 'BEKLEMEDE': 1, 'ONAYLANDI': 2, 'REDDEDİLDİ': 3, 'CANCELLED': 4 };
 
 const AdminCalendarPage = () => {
     // messageApi kullanımı
@@ -22,49 +21,33 @@ const AdminCalendarPage = () => {
     const [loading, setLoading] = useState(true);
     const [searchText, setSearchText] = useState('');
     
-    // Modal visibility state
     const [isModalVisible, setIsModalVisible] = useState(false);
 
     // --- DATA FETCHING ---
-    // src/pages/AdminCalendarPage.jsx (fetchAppointments function)
-
-const fetchAppointments = useCallback(async () => {
-    setLoading(true);
-    try {
-        const response = await getAllAppointmentsAdmin();
-        // 🚨 CRITICAL FIX: Check if the response data is a valid array
-        if (Array.isArray(response.data)) {
-            // Sort data by startTime (descending: newest first)
-            const sortedData = response.data.sort((a, b) => 
+    const fetchAppointments = useCallback(async () => {
+        setLoading(true);
+        try {
+            const response = await getAllAppointmentsAdmin();
+            
+            // Veriyi başlangıç zamanına göre AZALAN (descending) sırada sırala (Yeniden Eskiye)
+            const sortedData = (response.data || []).sort((a, b) => 
                 moment(b.startTime).valueOf() - moment(a.startTime).valueOf()
             );
-            setAppointments(sortedData);
-        } else {
-            // If the response is an object (like an ErrorDTO), treat it as an empty list
-            setAppointments([]); 
+            
+            // 🚨 CRITICAL FIX: Array.isArray kontrolü (Önceki hatadan dolayı eklendi)
+            if (Array.isArray(response.data)) {
+                setAppointments(sortedData);
+            } else {
+                 setAppointments([]);
+            }
+        } catch (error) {
+            messageApi.error('Randevu listesi yüklenemedi. Yetki veya sunucu hatası.');
+            console.error('Admin Randevu Fetch Error:', error);
+            setAppointments([]); // Hata durumunda listeyi temizle
+        } finally {
+            setLoading(false);
         }
-        
-    } catch (error) {
-        // Log the error details to the console
-        console.error('Admin Appointment Fetch Error:', error);
-        
-        // Check for specific error status codes (e.g., 401, 500)
-        const status = error.response?.status;
-        let errorMessage = 'Randevu listesi yüklenemedi. Yetki veya sunucu hatası.';
-
-        if (status === 401) {
-             errorMessage = 'Oturum süresi doldu. Lütfen tekrar giriş yapın.';
-        } else if (status === 500) {
-             errorMessage = 'Sunucu İç Hatası (500). Veri tabanı ilişkilerini kontrol edin.';
-        }
-
-        messageApi.error(errorMessage);
-        setAppointments([]); // Clear list on failure
-        
-    } finally {
-        setLoading(false);
-    }
-}, [messageApi]);
+    }, [messageApi]);
 
     useEffect(() => { 
         fetchAppointments(); 
@@ -72,35 +55,46 @@ const fetchAppointments = useCallback(async () => {
 
     // --- HANDLERS ---
     
-    // Live Search
     const handleSearchChange = (e) => { setSearchText(e.target.value.toLowerCase()); };
 
-    // Approve / Reject
     const handleStatusUpdate = async (id, newStatus) => {
         setLoading(true);
         try {
             await updateAppointmentStatus(id, newStatus);
-            messageApi.success(`Randevu başarıyla ${newStatus === 'ONAYLANDI' ? 'onaylandı' : 'reddedildi'}.`);
-            fetchAppointments();
+            
+            let messageText;
+            if (newStatus === 'ONAYLANDI') messageText = 'onaylandı';
+            else if (newStatus === 'REDDEDİLDİ') messageText = 'reddedildi';
+            else if (newStatus === 'CANCELLED') messageText = 'iptal edildi'; 
+            
+            messageApi.success(`Randevu başarıyla ${messageText}.`);
+            fetchAppointments(); 
         } catch (error) {
             messageApi.error('Durum güncellenemedi. Sunucu hatası.');
         } finally {
             setLoading(false);
         }
     };
-    
+
+    // Yeni Randevu İçin Modalı Aç
+    const handleNewAppointmentOpen = () => {
+        setIsModalVisible(true);
+    };
+
     // UI Helpers
-    const getStatusColor = (status) => { return status === 'ONAYLANDI' ? 'green' : status === 'BEKLEMEDE' ? 'orange' : 'red'; };
+    const getStatusColor = (status) => { 
+        if (status === 'ONAYLANDI') return 'green';
+        if (status === 'BEKLEMEDE') return 'orange';
+        return 'red'; 
+    };
     
     // Filtering Logic
     const filteredAppointments = appointments.filter(appointment => {
         if (!searchText) return true;
         
-        // Search targets: Customer Name, Email, Status, Date/Time
         const searchTarget = [
             appointment.customer?.fullName || '',
             appointment.customer?.email || '', 
-            appointment.totalPrice ? appointment.totalPrice.toString() : '',
             appointment.status || '',
             moment(appointment.startTime).format('DD/MM/YYYY dddd HH:mm') || ''
         ].join(' ').toLowerCase();
@@ -117,26 +111,24 @@ const fetchAppointments = useCallback(async () => {
             title: 'Saat Aralığı', 
             key: 'timeRange', 
             width: 250,
-            // Default sort: Newest first
             sorter: (a, b) => moment(a.startTime).valueOf() - moment(b.startTime).valueOf(), defaultSortOrder: 'descend',
             render: (_, record) => (
                 <Space direction="vertical" size={0}>
-                    {/* Date and Day */}
+                    {/* Tarih ve Gün Adı */}
                     <Text strong style={{ fontSize: '14px' }}>{moment(record.startTime).format('DD/MM/YYYY dddd')}</Text>
                     {/* Time Range */}
                     <Text type="secondary" style={{ fontSize: '13px' }}>{moment(record.startTime).format('HH:mm')} - {moment(record.endTime).format('HH:mm')}</Text>
-                    {/* Service Details - Assuming RandevuHizmetleri is EAGER fetched */}
+                    {/* Service Details - (randevuHizmetleri ilişkisinin var olduğu varsayılır) */}
                     <Text style={{ fontSize: '13px', color: '#1890ff', fontWeight: 500 }}>
                         {record.randevuHizmetleri 
                             ? record.randevuHizmetleri.map(rh => rh.hizmet?.ad).filter(name => name).join(', ') 
-                            : 'Yükleniyor...'}
+                            : 'Hizmet bilgisi yok'}
                     </Text>
                 </Space>
             ),
         },
         { 
             title: 'Durum', dataIndex: 'status', key: 'status', width: 150,
-            // Custom sort: PENDING (1) > APPROVED (2)
             sorter: (a, b) => STATUS_ORDER[a.status] - STATUS_ORDER[b.status],
             render: text => <Text strong style={{ color: getStatusColor(text) }}>{text}</Text> 
         },
@@ -144,13 +136,27 @@ const fetchAppointments = useCallback(async () => {
             title: 'İşlemler', key: 'action', width: 150,
             render: (_, record) => (
                 <Space size="middle">
-                    {/* Onayla / Reddet Buttons */}
+                    
+                    {/* ONAY / REDDET (Sadece BEKLEMEDE için) */}
                     {record.status === 'BEKLEMEDE' && <>
                         <Button icon={<CheckCircleOutlined />} type="primary" size="small" onClick={() => handleStatusUpdate(record.id, 'ONAYLANDI')}>Onayla</Button>
                         <Button icon={<CloseCircleOutlined />} type="danger" size="small" onClick={() => handleStatusUpdate(record.id, 'REDDEDİLDİ')}>Reddet</Button>
                     </>}
-                    {/* İşlem Tamamlandı */}
-                    {(record.status === 'ONAYLANDI' || record.status === 'REDDEDİLDİ') && <Text type="secondary">İşlem Tamamlandı</Text>}
+                    
+                    {/* İPTAL ET (Sadece ONAYLANMIŞ Randevular için) */}
+                    {record.status === 'ONAYLANDI' && (
+                        <Popconfirm
+                            title="Randevu iptal edilecek, mail gönderilecek. Emin misiniz?"
+                            onConfirm={() => handleStatusUpdate(record.id, 'CANCELLED')} 
+                            okText="Evet, İptal Et"
+                            cancelText="Hayır"
+                        >
+                            <Button icon={<CloseCircleOutlined />} size="small" danger>İptal Et</Button>
+                        </Popconfirm>
+                    )}
+
+                    {/* İşlem Tamamlandı Mesajı */}
+                    {(record.status === 'REDDEDİLDİ' || record.status === 'CANCELLED') && <Text type="secondary">İşlem Tamamlandı</Text>}
                 </Space>
             )
         }
@@ -167,7 +173,7 @@ const fetchAppointments = useCallback(async () => {
                     <Button 
                         type="primary" 
                         icon={<PlusOutlined />} 
-                        onClick={() => setIsModalVisible(true)} 
+                        onClick={handleNewAppointmentOpen} 
                     >
                         Yeni Randevu Oluştur
                     </Button>
@@ -194,8 +200,11 @@ const fetchAppointments = useCallback(async () => {
             
             <QuickAppointmentModal
                 isVisible={isModalVisible}
-                onClose={() => setIsModalVisible(false)}
+                onClose={() => {
+                    setIsModalVisible(false);
+                }}
                 onAppointmentCreated={fetchAppointments} 
+                appointmentToEdit={null} // Düzenleme kaldırıldığı için her zaman null gönderilir
             />
         </>
     );
