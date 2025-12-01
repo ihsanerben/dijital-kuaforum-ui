@@ -1,4 +1,4 @@
-// src/components/QuickAppointmentModal.jsx - ANT DESIGN UYUMLU FİNAL KODU
+// src/components/QuickAppointmentModal.jsx - FİNAL VE HATASIZ KOD
 
 import React, { useState, useEffect, useCallback } from "react";
 import {
@@ -8,16 +8,15 @@ import {
   Alert,
   Select,
   DatePicker,
-  TimePicker,
-  Input,
   Spin,
-  message,
   Space,
   Typography,
   App,
 } from "antd";
-import { LoadingOutlined, SearchOutlined } from "@ant-design/icons";
-import moment from "moment";
+import { LoadingOutlined } from "@ant-design/icons";
+// DÜZELTME: Ant Design v5 ile uyumluluk için Moment yerine Dayjs kullanıyoruz
+import dayjs from "dayjs"; 
+
 // API Importları
 import { searchCustomers } from "../api/customerService";
 import { getAllHizmetlerAdmin } from "../api/hizmetService";
@@ -27,35 +26,41 @@ import {
 } from "../api/appointmentService";
 
 const { Option } = Select;
-const { Text, Title } = Typography;
+const { Title, Text } = Typography;
 
 const QuickAppointmentModal = ({
   isVisible,
   onClose,
   onAppointmentCreated,
+  appointmentToEdit
 }) => {
-  // Ant Design hook'larına erişim
-  const { message } = App.useApp();
+  const { message: messageApi } = App.useApp();
   const [form] = Form.useForm();
+  const isEditing = !!appointmentToEdit;
 
   // 1. Randevu Bilgisi State'leri
   const [searchResults, setSearchResults] = useState([]);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [allServices, setAllServices] = useState([]);
-  const [selectedServiceId, setSelectedServiceId] = useState(null);
-  const [selectedDate, setSelectedDate] = useState(moment());
+  const [selectedServiceIds, setSelectedServiceIds] = useState([]); 
+  // DÜZELTME: Başlangıç değeri dayjs()
+  const [selectedDate, setSelectedDate] = useState(dayjs());
   const [availableSlots, setAvailableSlots] = useState([]);
   const [selectedSlot, setSelectedSlot] = useState(null);
 
   // 2. Kontrol State'leri
-  const [loading, setLoading] = useState(false); // Ana randevu oluşturma yükleniyor
-  const [slotLoading, setSlotLoading] = useState(false); // Slotlar yükleniyor
+  const [loading, setLoading] = useState(false);
+  const [slotLoading, setSlotLoading] = useState(false);
   const [fetchingCustomers, setFetchingCustomers] = useState(false);
   const [error, setError] = useState("");
 
+  // Hesaplanan toplam süreyi göster
+  const totalDuration = allServices
+    .filter((h) => selectedServiceIds.includes(h.id))
+    .reduce((sum, h) => sum + h.sureDakika, 0);
+
   // --- Veri Çekme İşlevleri ---
 
-  // Hizmetleri yükle
   const fetchServices = useCallback(async () => {
     try {
       const response = await getAllHizmetlerAdmin();
@@ -65,11 +70,12 @@ const QuickAppointmentModal = ({
     }
   }, []);
 
-  // Uygun saat dilimlerini çek (Hizmet veya Tarih değiştiğinde tetiklenir)
+  // Uygun saat dilimlerini çek
   const fetchAvailableSlots = useCallback(async () => {
-    if (!selectedServiceId || !selectedDate) {
+    if (totalDuration === 0 || !selectedDate) {
       setAvailableSlots([]);
       setSelectedSlot(null);
+      form.setFieldsValue({ randevuSaati: null });
       return;
     }
 
@@ -77,12 +83,20 @@ const QuickAppointmentModal = ({
     setError("");
     try {
       const dateString = selectedDate.format("YYYY-MM-DD");
+      const serviceIdForCheck = selectedServiceIds.length > 0 ? selectedServiceIds[0] : null;
+
       const response = await getAvailableSlotsAdmin(
-        selectedServiceId,
+        serviceIdForCheck,
         dateString
       );
       setAvailableSlots(response.data || []);
-      setSelectedSlot(null);
+      
+      const currentSlot = form.getFieldValue('randevuSaati');
+      if (currentSlot && response.data && !response.data.includes(currentSlot)) {
+           setSelectedSlot(null);
+           form.setFieldsValue({ randevuSaati: null });
+      }
+
     } catch (err) {
       setError(
         err.response?.data?.message ||
@@ -92,18 +106,44 @@ const QuickAppointmentModal = ({
     } finally {
       setSlotLoading(false);
     }
-  }, [selectedServiceId, selectedDate]);
+  }, [selectedServiceIds, selectedDate, totalDuration, form]);
 
-  // Bileşen yüklendiğinde hizmetleri çek
+  // useEffects
   useEffect(() => {
     fetchServices();
   }, [fetchServices]);
-  // Slotları çekmek için trigger'lar
+
   useEffect(() => {
     fetchAvailableSlots();
   }, [fetchAvailableSlots]);
+  
+  // Düzenleme modunda formu doldur
+  useEffect(() => {
+      if (isVisible && appointmentToEdit) {
+          // DÜZELTME: Gelen tarihi dayjs objesine çeviriyoruz
+          const startTime = dayjs(appointmentToEdit.startTime);
+          
+          const serviceIds = appointmentToEdit.randevuHizmetleri?.map(rh => rh.hizmet?.id) || [];
+          
+          form.setFieldsValue({
+              musteriId: appointmentToEdit.customer.id,
+              randevuTarihi: startTime,
+              randevuSaati: startTime.format('HH:mm'),
+              serviceIds: serviceIds,
+          });
+          
+          setSelectedCustomer(appointmentToEdit.customer);
+          setSelectedServiceIds(serviceIds);
+          setSelectedDate(startTime);
+          setSelectedSlot(startTime.format('HH:mm'));
+          
+      } else if (isVisible && !appointmentToEdit) {
+          handleReset();
+      }
+  }, [isVisible, appointmentToEdit, form]);
 
-  // Müşteri Arama İşlemi (Select bileşeni için)
+
+  // Müşteri Arama
   const handleCustomerSearch = async (query) => {
     if (query.length < 2) {
       setSearchResults([]);
@@ -121,68 +161,67 @@ const QuickAppointmentModal = ({
     }
   };
 
-  // Müşteri Select bileşeni değiştiğinde
   const handleCustomerSelect = (value) => {
     const customer = searchResults.find((c) => c.id === value);
     setSelectedCustomer(customer);
-    form.setFieldsValue({ musteriId: value }); // Form değerini güncelle
+    form.setFieldsValue({ musteriId: value });
     setSearchResults([]);
   };
 
-  // --- Randevu Oluşturma İşlemi ---
-    const handleCreateAppointment = async (values) => { 
-        if (!selectedCustomer || !selectedSlot) {
-            setError('Lütfen müşteri ve saat seçimi yapın.');
-            return;
-        }
+  // --- Randevu Oluşturma / Düzenleme ---
+  const handleCreateAppointment = async (values) => {
+    if (!selectedCustomer || selectedServiceIds.length === 0 || !values.randevuSaati) {
+      setError("Lütfen tüm gerekli alanları doldurun.");
+      return;
+    }
 
-        setLoading(true);
-        setError('');
+    setLoading(true);
+    setError("");
 
-        // 1. Randevu Tarihini Al (Moment objesi)
-        let fullDateTime = moment(values.randevuTarihi); 
+    // Tarih ve Saati Birleştir - DÜZELTME: dayjs kullanımı
+    let fullDateTime = dayjs(values.randevuTarihi);
+    
+    if (values.randevuSaati) {
+        // String "HH:mm" gelirse parse et
+        const [hour, minute] = values.randevuSaati.split(':');
         
-        // 2. KRİTİK ÇÖZÜM: Saat string'ini Moment objesine dönüştür ve birleştir.
-        if (values.randevuSaati) {
-            // 'HH:mm' formatındaki string'i Moment objesine çeviriyoruz
-            const submittedTimeMoment = moment(values.randevuSaati, 'HH:mm'); 
-            
-            // Tarih objesine saat ve dakikayı ekle
-            fullDateTime = fullDateTime
-                .hour(submittedTimeMoment.hour())
-                .minute(submittedTimeMoment.minute())
-                .second(0);
-        }
-        
-        const startDateTime = fullDateTime.format('YYYY-MM-DDTHH:mm:ss');
+        fullDateTime = fullDateTime
+            .hour(parseInt(hour))
+            .minute(parseInt(minute))
+            .second(0);
+    }
 
-        const appointmentData = {
-            customerId: selectedCustomer.id,
-            hizmetIdleri: [values.serviceId], 
-            startTime: startDateTime, 
-        };
+    const startDateTime = fullDateTime.format("YYYY-MM-DDTHH:mm:ss");
 
-        // debugger;
-        try {
-            await createAppointmentAdmin(appointmentData);
-            message.success(`Randevu, ${selectedCustomer.fullName} için başarıyla oluşturuldu.`);
-            onAppointmentCreated(`Randevu, ${selectedCustomer.fullName} için başarıyla oluşturuldu.`); 
-            handleReset();
-            onClose();
-        } catch (err) {
-            // ... (Hata yönetimi aynı kalır)
-        } finally {
-            setLoading(false);
-        }
+    const appointmentData = {
+      customerId: selectedCustomer.id,
+      hizmetIdleri: values.serviceIds,
+      startTime: startDateTime,
     };
 
-  // --- Modal Yönetimi ---
+    try {
+      await createAppointmentAdmin(appointmentData);
+      
+      messageApi.success(
+        `Randevu, ${selectedCustomer.fullName} için başarıyla ${isEditing ? 'güncellendi' : 'oluşturuldu'} ve ONAYLANDI.`
+      );
+      if (onAppointmentCreated) onAppointmentCreated();
+      handleModalClose();
+    } catch (err) {
+      setError(
+        err.response?.data?.message || "İşlem sırasında bir hata oluştu."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleReset = () => {
     form.resetFields();
     setSearchResults([]);
     setSelectedCustomer(null);
-    setSelectedServiceId(null);
-    setSelectedDate(moment());
+    setSelectedServiceIds([]);
+    setSelectedDate(dayjs()); // Reset to now
     setAvailableSlots([]);
     setSelectedSlot(null);
     setError("");
@@ -195,12 +234,11 @@ const QuickAppointmentModal = ({
     onClose();
   };
 
-  // --- UI Render ---
   return (
     <Modal
       title={
         <Title level={4} style={{ margin: 0 }}>
-          Hızlı Randevu Oluşturma
+          {isEditing ? "Randevu Düzenle" : "Hızlı Randevu Oluşturma"}
         </Title>
       }
       open={isVisible}
@@ -214,13 +252,15 @@ const QuickAppointmentModal = ({
           key="submit"
           type="primary"
           loading={loading}
-          onClick={() => form.submit()} // Formu tetikle
-          // Butonu, gerekli state'ler (müşteri, hizmet, slot) seçili olduğunda aktif et
+          onClick={() => form.submit()}
           disabled={
-            !selectedCustomer || !selectedServiceId || !selectedSlot || loading
+            !selectedCustomer ||
+            selectedServiceIds.length === 0 ||
+            !form.getFieldValue('randevuSaati') ||
+            loading
           }
         >
-          Randevu Oluştur & Onayla
+          {isEditing ? "Kaydet" : `Oluştur (${totalDuration} dk)`}
         </Button>,
       ]}
     >
@@ -228,9 +268,9 @@ const QuickAppointmentModal = ({
         form={form}
         layout="vertical"
         name="admin_booking_form"
-        onFinish={handleCreateAppointment} // Form submit olduğunda asıl fonksiyonu çağır
+        onFinish={handleCreateAppointment}
+        initialValues={{ randevuTarihi: dayjs() }} // Initial value updated
       >
-        {/* Hata Mesajı */}
         {error && (
           <Alert
             message="Hata"
@@ -239,6 +279,7 @@ const QuickAppointmentModal = ({
             showIcon
             closable
             onClose={() => setError("")}
+            style={{ marginBottom: 16 }}
           />
         )}
 
@@ -247,6 +288,7 @@ const QuickAppointmentModal = ({
           name="musteriId"
           label="Müşteri Seçimi"
           rules={[{ required: true, message: "Lütfen bir müşteri seçin!" }]}
+          hidden={isEditing}
         >
           <Select
             showSearch
@@ -275,12 +317,11 @@ const QuickAppointmentModal = ({
           </Select>
         </Form.Item>
 
-        {/* Seçilen Müşteri Bilgisi */}
         {selectedCustomer && (
           <Alert
-            message={`${selectedCustomer.fullName} (${selectedCustomer.phoneNumber}) seçili.`}
-            type="success"
-            closable
+            message={`${selectedCustomer.fullName} (${selectedCustomer.phoneNumber})`}
+            type="info"
+            closable={!isEditing}
             style={{ marginBottom: 15 }}
             onClose={() => {
               setSelectedCustomer(null);
@@ -291,14 +332,21 @@ const QuickAppointmentModal = ({
 
         {/* 2. HİZMET SEÇİMİ */}
         <Form.Item
-          name="serviceId"
-          label="Hizmet Seçimi"
-          rules={[{ required: true, message: "Lütfen bir hizmet seçin!" }]}
+          name="serviceIds"
+          label={`Hizmet Seçimi (Toplam: ${totalDuration} dk)`}
+          rules={[
+            { required: true, message: "Lütfen en az bir hizmet seçin!" },
+          ]}
         >
           <Select
-            placeholder="Alınacak hizmeti seçin"
-            onChange={(value) => setSelectedServiceId(value)}
+            mode="multiple"
+            placeholder="Alınacak hizmetleri seçin"
+            onChange={(values) => {
+                setSelectedServiceIds(values);
+                form.setFieldsValue({ randevuSaati: null });
+            }}
             disabled={allServices.length === 0}
+            value={selectedServiceIds}
           >
             {allServices.map((h) => (
               <Option key={h.id} value={h.id}>
@@ -319,10 +367,16 @@ const QuickAppointmentModal = ({
               <DatePicker
                 placeholder="Tarih Seçin"
                 style={{ width: "100%" }}
+                format="DD.MM.YYYY"
                 disabledDate={(current) =>
-                  current && current < moment().startOf("day")
+                  // DÜZELTME: dayjs ile tarih kontrolü
+                  current && current < dayjs().startOf("day")
                 }
-                onChange={(date) => setSelectedDate(date)}
+                onChange={(date) => {
+                    setSelectedDate(date);
+                    form.setFieldsValue({ randevuSaati: null });
+                }}
+                allowClear={false}
               />
             </Form.Item>
             <Form.Item
@@ -333,7 +387,7 @@ const QuickAppointmentModal = ({
               <Select
                 placeholder={slotLoading ? "Yükleniyor..." : "Saat seçiniz"}
                 onChange={(value) => setSelectedSlot(value)}
-                disabled={availableSlots.length === 0 || !selectedServiceId}
+                disabled={availableSlots.length === 0 || totalDuration === 0 || slotLoading}
                 loading={slotLoading}
                 value={selectedSlot}
               >
@@ -345,10 +399,10 @@ const QuickAppointmentModal = ({
               </Select>
             </Form.Item>
           </Space.Compact>
-          {/* Uygun Saat Bulunamadı Uyarısı */}
-          {selectedServiceId && availableSlots.length === 0 && !slotLoading && (
+          
+          {selectedServiceIds.length > 0 && availableSlots.length === 0 && !slotLoading && totalDuration > 0 && (
             <Text type="danger" style={{ marginTop: 5, display: "block" }}>
-              Seçilen hizmet/tarih için uygun saat bulunamadı.
+              Seçilen hizmet süresi ({totalDuration} dk) için uygun saat bulunamadı.
             </Text>
           )}
         </Form.Item>
