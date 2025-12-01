@@ -82,3 +82,19 @@ export const getAdminStatistics = async () => {
     const headers = getAdminHeaders();
     return http.get(`${BASE_URL}/admin/istatistik`, { headers });
 };
+
+
+// Müşteri Özel İstatistikleri
+export const getCustomerStats = async (customerId) => {
+    const headers = getAdminHeaders();
+    return http.get(`${BASE_URL}/admin/stats/customer/${customerId}`, { headers });
+};
+
+// Genel Dükkan İstatistikleri
+export const getGeneralStats = async (startDate, endDate) => {
+    const headers = getAdminHeaders();
+    return http.get(`${BASE_URL}/admin/stats/general`, { 
+        headers,
+        params: { startDate, endDate }
+    });
+};
